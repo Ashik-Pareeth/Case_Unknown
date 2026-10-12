@@ -5,6 +5,11 @@ A 2D detective mystery game built with Pygame and pure SVG vector assets.
 """
 
 import sys
+import os
+
+# Ensure repository root is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import pygame
 from src.settings import (
     SCREEN_WIDTH,
