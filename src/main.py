@@ -42,9 +42,47 @@ walls = [
     ),
 ]
 
+# Furniture settings & images
+table_image = pygame.image.load(
+    "assets/images/furniture/clerk_table.png"
+).convert_alpha()
+sofa_image = pygame.image.load("assets/images/furniture/sofa.png").convert_alpha()
+
+table_image = pygame.transform.smoothscale(table_image, (180, 125))
+sofa_image = pygame.transform.smoothscale(sofa_image, (190, 125))
+
+furniture = [
+    {
+        "image": table_image,
+        "rect": table_image.get_rect(topleft=(180, 150)),
+        "hitbox_insets": (12, 20, 12, 8),
+    },
+    {
+        "image": sofa_image,
+        "rect": sofa_image.get_rect(topleft=(180, 390)),
+        "hitbox_insets": (10, 18, 10, 6),
+    },
+]
+
+# Compute furniture hitboxes (left, top, right, bottom insets)
+for item in furniture:
+    left, top, right, bottom = item["hitbox_insets"]
+    rect = item["rect"]
+    item["hitbox"] = pygame.Rect(
+        rect.left + left,
+        rect.top + top,
+        rect.width - left - right,
+        rect.height - top - bottom,
+    )
+
 # Detective settings
 PLAYER_SIZE = 32
 PLAYER_SPEED = 240
+
+player_image = pygame.image.load(
+    "assets/images/characters/charcter_front.png"
+).convert_alpha()
+player_image = pygame.transform.scale(player_image, (48, 60))
 
 player = pygame.Rect(
     ROOM.centerx - PLAYER_SIZE // 2,
@@ -53,17 +91,20 @@ player = pygame.Rect(
     PLAYER_SIZE,
 )
 
+# Solid obstacles (walls + calculated furniture hitboxes)
+solid_objects = walls + [item["hitbox"] for item in furniture]
+
 running = True
 
 while running:
     delta_time = clock.tick(FPS) / 1000
 
-    # Handle events
+    # 1. Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Read keyboard input
+    # 2. Player Input & Movement
     keys = pygame.key.get_pressed()
     direction = pygame.Vector2(0, 0)
 
@@ -79,37 +120,40 @@ while running:
     if direction.length_squared() > 0:
         direction = direction.normalize()
 
-    # Move horizontally and resolve wall collisions
+    # Move X and collide
     old_x = player.x
     player.x += round(direction.x * PLAYER_SPEED * delta_time)
-
-    if any(player.colliderect(wall) for wall in walls):
+    if any(player.colliderect(obj) for obj in solid_objects):
         player.x = old_x
 
-    # Move vertically and resolve wall collisions
+    # Move Y and collide
     old_y = player.y
     player.y += round(direction.y * PLAYER_SPEED * delta_time)
-
-    if any(player.colliderect(wall) for wall in walls):
+    if any(player.colliderect(obj) for obj in solid_objects):
         player.y = old_y
 
-    # Draw the background and room
+    # 3. Drawing / Rendering
     screen.fill(BACKGROUND_COLOR)
     pygame.draw.rect(screen, WALL_COLOR, ROOM)
     pygame.draw.rect(screen, FLOOR_COLOR, FLOOR)
 
-    # Draw the floor grid
+    # Floor grid
     grid_size = 48
-
     for x in range(FLOOR.left, FLOOR.right, grid_size):
         pygame.draw.line(screen, GRID_COLOR, (x, FLOOR.top), (x, FLOOR.bottom))
-
     for y in range(FLOOR.top, FLOOR.bottom, grid_size):
         pygame.draw.line(screen, GRID_COLOR, (FLOOR.left, y), (FLOOR.right, y))
 
-    # Draw the detective
-    pygame.draw.rect(screen, PLAYER_COLOR, player, border_radius=6)
+    # Draw furniture
+    for item in furniture:
+        screen.blit(item["image"], item["rect"])
 
+    # Draw detective
+    sprite_x = player.centerx - player_image.get_width() // 2
+    sprite_y = player.bottom - player_image.get_height()
+    screen.blit(player_image, (sprite_x, sprite_y))
+
+    # Update frame
     pygame.display.flip()
 
 pygame.quit()
