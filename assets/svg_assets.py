@@ -63,7 +63,7 @@ def _generate_detective_down_svg(bob_y: int = 0, l_leg_dx: int = 0, l_leg_dy: in
                                  l_arm_dy: int = 0, r_arm_dy: int = 0,
                                  coat_flare: int = 0) -> str:
     """Generates an SVG for the Detective facing Down (towards the camera)."""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" width="64" height="80">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="64" height="80">
   <defs>
     <!-- Coat gradient -->
     <linearGradient id="coatGrad" x1="0" y1="0" x2="1" y2="0">
