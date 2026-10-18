@@ -7,6 +7,8 @@ SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 640
 FPS = 60
 TITLE = "Case Unknown — Detective Office"
+FULLSCREEN = True  # Default to Fullscreen mode (press F11 to toggle anytime)
+
 
 # Room settings
 ROOM_X = 60

@@ -23,6 +23,7 @@ from src.settings import (
     UI_PANEL_BORDER,
     UI_TEXT_TITLE,
     UI_TEXT_MUTED,
+    FULLSCREEN,
 )
 from src.player import Player
 from src.room import Room
@@ -33,7 +34,11 @@ def main():
     pygame.init()
     pygame.font.init()
 
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    flags = pygame.SCALED
+    if FULLSCREEN:
+        flags |= pygame.FULLSCREEN
+
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
     pygame.display.set_caption(TITLE)
     clock = pygame.time.Clock()
 
@@ -65,7 +70,9 @@ def main():
             # Let interaction modal intercept inputs
             consumed = interaction_mgr.handle_event(event)
             if not consumed and event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key in (pygame.K_F11, pygame.K_f):
+                    pygame.display.toggle_fullscreen()
+                elif event.key == pygame.K_ESCAPE:
                     running = False
 
         # -------------------------------------------------------------
@@ -130,15 +137,15 @@ def main():
         screen.blit(status_text, (ROOM_X + 22, ROOM_Y - 32))
 
         # Bottom Controls Hint
-        ctrl_w = 340
+        ctrl_w = 420
         ctrl_h = 24
         ctrl_surf = pygame.Surface((ctrl_w, ctrl_h), pygame.SRCALPHA)
         ctrl_surf.fill((16, 18, 22, 180))
         pygame.draw.rect(ctrl_surf, (60, 55, 45), (0, 0, ctrl_w, ctrl_h), 1, border_radius=3)
         screen.blit(ctrl_surf, (SCREEN_WIDTH - ctrl_w - ROOM_X - 10, SCREEN_HEIGHT - 32))
 
-        hint_text = ctrl_font.render("[WASD / ARROWS] Move    [E / SPACE] Inspect    [ESC] Quit", True, UI_TEXT_MUTED)
-        screen.blit(hint_text, (SCREEN_WIDTH - ctrl_w - ROOM_X + 2, SCREEN_HEIGHT - 28))
+        hint_text = ctrl_font.render("[WASD] Move   [E / SPACE] Inspect   [F11] Fullscreen   [ESC] Quit", True, UI_TEXT_MUTED)
+        screen.blit(hint_text, (SCREEN_WIDTH - ctrl_w - ROOM_X + 12, SCREEN_HEIGHT - 28))
 
         pygame.display.flip()
 
