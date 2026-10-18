@@ -503,41 +503,44 @@ def get_character_animations() -> dict:
     """
     Renders and returns all directional animations for the Detective:
     'down', 'up', 'right', 'left' containing 'idle' and 'walk' frame lists.
+    The SVGs use a 128x160 internal viewBox for detail but are scaled to 64x80.
     """
+    W, H = 64, 80  # Final sprite size in pixels
+
     # Down animations (Facing player)
     down_idle = [
-        render_svg(_generate_detective_down_svg(bob_y=0)),
-        render_svg(_generate_detective_down_svg(bob_y=1)),
+        render_svg(_generate_detective_down_svg(bob_y=0), W, H),
+        render_svg(_generate_detective_down_svg(bob_y=1), W, H),
     ]
     down_walk = [
-        render_svg(_generate_detective_down_svg(bob_y=0, l_leg_dx=-1, l_leg_dy=-4, r_leg_dx=1, r_leg_dy=3, l_arm_dy=2, r_arm_dy=-2, coat_flare=2)),
-        render_svg(_generate_detective_down_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0)),
-        render_svg(_generate_detective_down_svg(bob_y=0, l_leg_dx=1, l_leg_dy=3, r_leg_dx=-1, r_leg_dy=-4, l_arm_dy=-2, r_arm_dy=2, coat_flare=-2)),
-        render_svg(_generate_detective_down_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0)),
+        render_svg(_generate_detective_down_svg(bob_y=0, l_leg_dx=-1, l_leg_dy=-4, r_leg_dx=1, r_leg_dy=3, l_arm_dy=2, r_arm_dy=-2, coat_flare=2), W, H),
+        render_svg(_generate_detective_down_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0), W, H),
+        render_svg(_generate_detective_down_svg(bob_y=0, l_leg_dx=1, l_leg_dy=3, r_leg_dx=-1, r_leg_dy=-4, l_arm_dy=-2, r_arm_dy=2, coat_flare=-2), W, H),
+        render_svg(_generate_detective_down_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0), W, H),
     ]
 
     # Up animations (Facing away)
     up_idle = [
-        render_svg(_generate_detective_up_svg(bob_y=0)),
-        render_svg(_generate_detective_up_svg(bob_y=1)),
+        render_svg(_generate_detective_up_svg(bob_y=0), W, H),
+        render_svg(_generate_detective_up_svg(bob_y=1), W, H),
     ]
     up_walk = [
-        render_svg(_generate_detective_up_svg(bob_y=0, l_leg_dx=-1, l_leg_dy=-4, r_leg_dx=1, r_leg_dy=3, l_arm_dy=2, r_arm_dy=-2, coat_flare=2)),
-        render_svg(_generate_detective_up_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0)),
-        render_svg(_generate_detective_up_svg(bob_y=0, l_leg_dx=1, l_leg_dy=3, r_leg_dx=-1, r_leg_dy=-4, l_arm_dy=-2, r_arm_dy=2, coat_flare=-2)),
-        render_svg(_generate_detective_up_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0)),
+        render_svg(_generate_detective_up_svg(bob_y=0, l_leg_dx=-1, l_leg_dy=-4, r_leg_dx=1, r_leg_dy=3, l_arm_dy=2, r_arm_dy=-2, coat_flare=2), W, H),
+        render_svg(_generate_detective_up_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0), W, H),
+        render_svg(_generate_detective_up_svg(bob_y=0, l_leg_dx=1, l_leg_dy=3, r_leg_dx=-1, r_leg_dy=-4, l_arm_dy=-2, r_arm_dy=2, coat_flare=-2), W, H),
+        render_svg(_generate_detective_up_svg(bob_y=1, l_leg_dx=0, l_leg_dy=0, r_leg_dx=0, r_leg_dy=0, l_arm_dy=0, r_arm_dy=0, coat_flare=0), W, H),
     ]
 
     # Right animations (Profile)
     right_idle = [
-        render_svg(_generate_detective_side_svg(bob_y=0)),
-        render_svg(_generate_detective_side_svg(bob_y=1)),
+        render_svg(_generate_detective_side_svg(bob_y=0), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=1), W, H),
     ]
     right_walk = [
-        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=4, f_leg_dy=-3, b_leg_dx=-4, b_leg_dy=3, f_arm_rot=-14, b_arm_rot=14, coat_flare=3)),
-        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=0, f_leg_dy=0, b_leg_dx=0, b_leg_dy=0, f_arm_rot=0, b_arm_rot=0, coat_flare=0)),
-        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=-4, f_leg_dy=3, b_leg_dx=4, b_leg_dy=-3, f_arm_rot=14, b_arm_rot=-14, coat_flare=1)),
-        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=0, f_leg_dy=0, b_leg_dx=0, b_leg_dy=0, f_arm_rot=0, b_arm_rot=0, coat_flare=0)),
+        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=4, f_leg_dy=-3, b_leg_dx=-4, b_leg_dy=3, f_arm_rot=-14, b_arm_rot=14, coat_flare=3), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=0, f_leg_dy=0, b_leg_dx=0, b_leg_dy=0, f_arm_rot=0, b_arm_rot=0, coat_flare=0), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=-4, f_leg_dy=3, b_leg_dx=4, b_leg_dy=-3, f_arm_rot=14, b_arm_rot=-14, coat_flare=1), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=0, f_leg_dy=0, b_leg_dx=0, b_leg_dy=0, f_arm_rot=0, b_arm_rot=0, coat_flare=0), W, H),
     ]
 
     # Left animations (Flipped horizontally from Right for perfect frame symmetry)
