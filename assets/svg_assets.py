@@ -25,21 +25,7 @@ def render_svg(svg_code: str, width: int = None, height: int = None) -> pygame.S
     if cache_key in _SURFACE_CACHE:
         return _SURFACE_CACHE[cache_key]
 
-    # If width and height are specified, ensure the root SVG tag reflects them
-    processed_svg = svg_code
-    if width is not None and height is not None:
-        if '<svg' in processed_svg:
-            # Replace or inject width and height in the <svg tag
-            header_end = processed_svg.find('>')
-            header = processed_svg[:header_end]
-            # Strip existing width and height if any
-            import re
-            header = re.sub(r'\bwidth="[^"]*"', '', header)
-            header = re.sub(r'\bheight="[^"]*"', '', header)
-            new_header = f'{header} width="{width}" height="{height}"'
-            processed_svg = new_header + processed_svg[header_end:]
-
-    svg_bytes = processed_svg.encode('utf-8')
+    svg_bytes = svg_code.encode('utf-8')
     bytes_io = io.BytesIO(svg_bytes)
     surface = pygame.image.load(bytes_io, "asset.svg")
     if pygame.display.get_surface() is not None:
@@ -63,7 +49,7 @@ def _generate_detective_down_svg(bob_y: int = 0, l_leg_dx: int = 0, l_leg_dy: in
                                  l_arm_dy: int = 0, r_arm_dy: int = 0,
                                  coat_flare: int = 0) -> str:
     """Generates an SVG for the Detective facing Down (towards the camera)."""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="64" height="80">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="128" height="160">
   <defs>
     <linearGradient id="coatGrad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#b08b58"/>
@@ -262,7 +248,7 @@ def _generate_detective_up_svg(bob_y: int = 0, l_leg_dx: int = 0, l_leg_dy: int 
                                l_arm_dy: int = 0, r_arm_dy: int = 0,
                                coat_flare: int = 0) -> str:
     """Generates an SVG for the Detective facing Up (walking away / back view)."""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="64" height="80">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="128" height="160">
   <defs>
     <linearGradient id="coatGradUp" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#9e7b48"/>
@@ -354,147 +340,205 @@ def _generate_detective_side_svg(bob_y: int = 0, f_leg_dx: int = 0, f_leg_dy: in
                                  f_arm_rot: int = 0, b_arm_rot: int = 0,
                                  coat_flare: int = 0) -> str:
     """Generates an SVG for the Detective facing Right (profile view)."""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="64" height="80">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="128" height="160">
   <defs>
     <linearGradient id="coatGradSide" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#8c6a3b"/>
-      <stop offset="70%" stop-color="#c9a470"/>
-      <stop offset="100%" stop-color="#a88450"/>
+      <stop offset="0%" stop-color="#967342"/>
+      <stop offset="35%" stop-color="#caa470"/>
+      <stop offset="80%" stop-color="#b08b58"/>
+      <stop offset="100%" stop-color="#8a6736"/>
     </linearGradient>
-    <linearGradient id="hatGradSide" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="coatBackGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#73552d"/>
+      <stop offset="100%" stop-color="#8c6a3b"/>
+    </linearGradient>
+    <linearGradient id="hatGradSide" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#4a3e35"/>
-      <stop offset="100%" stop-color="#2d241d"/>
+      <stop offset="50%" stop-color="#382e25"/>
+      <stop offset="100%" stop-color="#221b15"/>
     </linearGradient>
     <linearGradient id="skinSide" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#d4a060"/>
-      <stop offset="40%" stop-color="#e8c08a"/>
-      <stop offset="100%" stop-color="#f2d0a0"/>
+      <stop offset="0%" stop-color="#dcad78"/>
+      <stop offset="55%" stop-color="#ebd1a4"/>
+      <stop offset="100%" stop-color="#f5dcba"/>
     </linearGradient>
-    <radialGradient id="irisGradSide" cx="40%" cy="35%" r="60%">
-      <stop offset="0%" stop-color="#5a7a3a"/>
-      <stop offset="60%" stop-color="#2e4a1c"/>
-      <stop offset="100%" stop-color="#1a2e10"/>
+    <radialGradient id="irisGradSide" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#6b8f45"/>
+      <stop offset="60%" stop-color="#345420"/>
+      <stop offset="100%" stop-color="#1b2e11"/>
     </radialGradient>
   </defs>
 
   <!-- Ground contact shadow -->
-  <ellipse cx="66" cy="152" rx="36" ry="8" fill="#000000" opacity="0.3"/>
+  <ellipse cx="{64 + f_leg_dx}" cy="152" rx="{34 + abs(f_leg_dx)*2}" ry="7" fill="#000000" opacity="0.3"/>
 
-  <!-- Back Leg -->
+  <!-- Back Leg & Shoe (Swinging / Stepping) -->
   <g transform="translate({b_leg_dx*2}, {b_leg_dy*2})">
-    <rect x="50" y="104" width="14" height="36" rx="4" fill="#20232a"/>
-    <ellipse cx="58" cy="142" rx="12" ry="5" fill="#14161a"/>
+    <path d="M52,104 L63,104 L{65 + b_leg_dx},136 L{52 + b_leg_dx},136 Z" fill="#20232a"/>
+    <g transform="translate({b_leg_dx}, 0)">
+      <rect x="49" y="135" width="18" height="8" rx="3" fill="#14161a"/>
+      <path d="M47,138 Q57,134 67,137 L69,145 L46,145 Z" fill="#1e222a"/>
+      <line x1="46" y1="145" x2="69" y2="145" stroke="#0e1014" stroke-width="1.5"/>
+    </g>
   </g>
 
-  <!-- Front Leg -->
+  <!-- Front Leg & Shoe -->
   <g transform="translate({f_leg_dx*2}, {f_leg_dy*2})">
-    <rect x="62" y="104" width="14" height="36" rx="4" fill="#2c3039"/>
-    <ellipse cx="70" cy="142" rx="13" ry="5" fill="#1a1c22"/>
-    <path d="M62,138 Q68,134 82,138 L82,144 L62,144 Z" fill="#242830"/>
+    <path d="M61,104 L74,104 L{76 + f_leg_dx},136 L{61 + f_leg_dx},136 Z" fill="#282c35"/>
+    <line x1="{62 + f_leg_dx*0.5}" y1="106" x2="{62 + f_leg_dx}" y2="135" stroke="#1c1f26" stroke-width="1"/>
+    <g transform="translate({f_leg_dx}, 0)">
+      <rect x="59" y="135" width="20" height="8" rx="3" fill="#181a20"/>
+      <path d="M57,138 Q69,133 80,137 L82,145 L56,145 Z" fill="#242832"/>
+      <path d="M72,136 Q78,135 81,138 L81,145 L72,145 Z" fill="#2e3340" opacity="0.6"/>
+      <line x1="56" y1="145" x2="82" y2="145" stroke="#101216" stroke-width="1.5"/>
+    </g>
   </g>
 
-  <!-- Back Arm Swinging -->
-  <g transform="translate(0, {bob_y*2}) rotate({b_arm_rot}, 56, 64)">
-    <path d="M52,58 Q44,78 48,96 Q52,100 56,96 Q54,80 60,62 Z" fill="#826235"/>
-    <rect x="46" y="90" width="12" height="6" rx="2" fill="#5e4520"/>
-    <ellipse cx="50" cy="99" rx="6" ry="4" fill="#c0966a"/>
+  <!-- Back Arm (Swinging behind body) -->
+  <g transform="translate(0, {bob_y*2}) rotate({b_arm_rot}, 58, 62)">
+    <path d="M54,58 L46,80 L52,94 L60,92 L58,76 L62,58 Z" fill="url(#coatBackGrad)"/>
+    <rect x="49" y="88" width="11" height="4" rx="1.5" fill="#5c4422"/>
+    <circle cx="58" cy="90" r="1.2" fill="#dfb15b"/>
+    <ellipse cx="53" cy="97" rx="5" ry="4" fill="#cf9f6e"/>
   </g>
 
-  <!-- Upper Body and Profile Head -->
+  <!-- Upper Body and Profile Head (bobs together) -->
   <g transform="translate(0, {bob_y*2})">
-    <!-- Trench Coat Silhouette and Back Tail -->
-    <path d="M44,84 L{36 - coat_flare*2},116 L78,116 L84,84 Z" fill="#8c6a3b"/>
-    <path d="M47,84 L{39 - coat_flare*2},112 L76,112 L82,84 Z" fill="url(#coatGradSide)"/>
+    <!-- Trench Coat Tail & Back Flare -->
+    <path d="M46,84 L{37 - coat_flare*2.5},114 L75,114 L78,84 Z" fill="#7a5d34"/>
+    <path d="M48,84 L{40 - coat_flare*2.5},112 L74,112 L77,84 Z" fill="url(#coatGradSide)"/>
+    <line x1="{48 - coat_flare}" y1="92" x2="{45 - coat_flare*2}" y2="112" stroke="#684f2c" stroke-width="1.5"/>
 
-    <!-- Torso Profile -->
-    <path d="M48,56 L82,56 L84,92 L48,92 Z" fill="url(#coatGradSide)"/>
-    <path d="M48,62 Q65,58 82,62" stroke="#7a5e32" stroke-width="1.5" fill="none" opacity="0.6"/>
+    <!-- Torso Silhouette with tailored rounded shoulder -->
+    <path d="M54,52 
+             Q45,54 45,64 
+             L46,88 
+             L79,88 
+             L78,60 
+             Q78,54 70,52 
+             Z" fill="url(#coatGradSide)"/>
+    
+    <!-- Coat Lapel Overlap & Double-breasted chest -->
+    <path d="M52,54 Q47,56 47,66 L48,86 L77,86 L77,64 Q76,55 69,53 Z" fill="url(#coatGradSide)"/>
+    <line x1="68" y1="58" x2="70" y2="84" stroke="#7e6034" stroke-width="1.2" stroke-dasharray="3,2"/>
 
-    <!-- Belt and Buckle -->
-    <rect x="46" y="86" width="38" height="7" rx="2" fill="#6d532a"/>
-    <rect x="76" y="84" width="8" height="10" rx="2" fill="#dfb15b" stroke="#b88c38" stroke-width="0.5"/>
-    <rect x="77" y="85" width="6" height="8" rx="1" fill="#c99e3a"/>
+    <!-- Belt & Brass Buckle -->
+    <rect x="45" y="84" width="35" height="6" rx="1.5" fill="#5c4422"/>
+    <rect x="55" y="83" width="3" height="8" rx="1" fill="#4a361a"/>
+    <!-- Belt Buckle on front hip -->
+    <rect x="74" y="82" width="7" height="9" rx="2" fill="#dfb15b" stroke="#9e7b28" stroke-width="0.8"/>
+    <rect x="75.5" y="83.5" width="4" height="6" rx="1" fill="#c49b32"/>
+    <line x1="77.5" y1="82" x2="77.5" y2="91" stroke="#8a681a" stroke-width="1"/>
 
-    <!-- Collar and Profile Tie -->
-    <polygon points="72,56 82,66 78,56" fill="#e8edf2"/>
-    <polygon points="78,60 84,70 80,76 76,66" fill="#a82323"/>
-    <line x1="79" y1="62" x2="78" y2="74" stroke="#c43030" stroke-width="0.8" opacity="0.6"/>
+    <!-- Shirt Collar & Silk Tie -->
+    <polygon points="67,50 78,51 79,60 72,56" fill="#e8edf2"/>
+    <polygon points="72,50 78,51 76,56" fill="#d0d8e0"/>
+    <polygon points="74,54 79,55 78,73 74,76 73,60" fill="#a82323"/>
+    <polygon points="75,55 78,56 77,72 75,74" fill="#c43030"/>
 
-    <!-- Front Arm Swinging -->
-    <g transform="rotate({f_arm_rot}, 68, 64)">
-      <path d="M62,58 Q72,76 76,96 Q80,100 84,96 Q80,78 72,60 Z" fill="url(#coatGradSide)"/>
-      <rect x="74" y="90" width="12" height="6" rx="2" fill="#7a5c32"/>
-      <ellipse cx="80" cy="99" rx="6" ry="4" fill="#d2ab82"/>
+    <!-- Coat Lapels -->
+    <polygon points="61,52 77,64 72,74 61,58" fill="#a6814c"/>
+    <polygon points="61,52 75,63 71,72 62,58" fill="#bfa068"/>
+    <!-- Coat buttons -->
+    <circle cx="71" cy="65" r="2" fill="#dfb15b" stroke="#7a5d34" stroke-width="0.6"/>
+    <circle cx="72" cy="76" r="2" fill="#dfb15b" stroke="#7a5d34" stroke-width="0.6"/>
+
+    <!-- Front Arm (Swinging in front of body) -->
+    <g transform="rotate({f_arm_rot}, 63, 60)">
+      <ellipse cx="62" cy="58" rx="7" ry="5.5" fill="#b08b58"/>
+      <path d="M57,59 L66,76 L64,92 L56,92 L54,76 L55,59 Z" fill="url(#coatGradSide)"/>
+      <path d="M54,74 Q59,77 63,74" stroke="#7a5d34" stroke-width="1.2" fill="none"/>
+      <rect x="55" y="88" width="11" height="4" rx="1.5" fill="#6d512a"/>
+      <circle cx="63" cy="90" r="1.2" fill="#dfb15b"/>
+      <ellipse cx="60" cy="96" rx="5" ry="4" fill="#e2b484"/>
+      <path d="M58,95 Q62,98 64,95" stroke="#b07d50" stroke-width="1" fill="none"/>
     </g>
 
-    <!-- Profile Neck -->
-    <rect x="60" y="40" width="14" height="18" rx="4" fill="#d4a060"/>
-    <rect x="60" y="40" width="5" height="18" rx="2" fill="#b87840" opacity="0.4"/>
-    <ellipse cx="66" cy="52" rx="3" ry="2" fill="#c09060" opacity="0.3"/>
+    <!-- Neck (natural angled transition from shoulders) -->
+    <path d="M54,42 Q53,48 55,54 L69,54 Q68,48 67,42 Z" fill="url(#skinSide)"/>
+    <path d="M54,42 L66,42 L63,48 L55,47 Z" fill="#b88450" opacity="0.4"/>
 
-    <!-- Head shape: young angular profile jaw -->
-    <ellipse cx="58" cy="22" rx="20" ry="22" fill="#e8c08a"/>
-    <path d="M60,8 Q82,8 84,22 Q86,32 80,44 Q76,52 72,56 Q66,58 62,56 Q56,52 58,44 L58,8 Z" fill="url(#skinSide)"/>
+    <!-- Cranium / Head Base -->
+    <path d="M48,22 Q46,32 50,40 Q54,46 62,48 L68,48 Q74,44 76,38 Q78,30 76,22 Z" fill="url(#skinSide)"/>
+
+    <!-- Hair: Rich dark brown hair covering back of head and under hat -->
+    <path d="M46,20 Q44,28 46,36 Q48,42 54,44 Q52,38 51,32 Q50,24 51,20 Z" fill="#2a1a08"/>
+    <path d="M48,22 Q46,30 48,38 Q51,42 55,43 L54,34 Q52,26 53,20 Z" fill="#3d2810"/>
+    <path d="M48,24 Q46,32 49,38" stroke="#5a3e22" stroke-width="1" fill="none" opacity="0.7"/>
 
     <!-- Ear -->
-    <ellipse cx="60" cy="32" rx="7" ry="10" fill="#e0b87e"/>
-    <ellipse cx="59" cy="32" rx="4" ry="7" fill="#c49060"/>
-    <path d="M58,27 Q55,32 58,37" stroke="#a87040" stroke-width="1.2" fill="none"/>
-    <ellipse cx="60" cy="40" rx="3.5" ry="3" fill="#d4a060"/>
-    <path d="M52,22 Q56,14 64,12" stroke="#3d2810" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="56" cy="33" rx="5" ry="7.5" fill="#e0b280"/>
+    <ellipse cx="55.5" cy="33" rx="3.5" ry="5.5" fill="#c69262"/>
+    <path d="M54,30 Q52,33 55,36" stroke="#9e6838" stroke-width="1" fill="none"/>
+    <ellipse cx="56" cy="38" rx="2.5" ry="2.5" fill="#d8a474"/>
 
-    <!-- Profile Hair -->
-    <path d="M58,8 Q64,4 72,4 Q80,4 84,10" fill="#3d2810" stroke="#3d2810" stroke-width="1"/>
-    <path d="M60,8 Q66,5 74,6" stroke="#5a3e22" stroke-width="1" fill="none" opacity="0.7"/>
+    <!-- Sideburn in front of ear -->
+    <path d="M58,22 L59,34 Q58,37 57,38 L55,34 L56,22 Z" fill="#2a1a08"/>
 
-    <!-- Sideburn -->
-    <path d="M66,28 Q64,34 64,42 Q62,44 62,48" stroke="#3d2810" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8"/>
+    <!-- Front Face Profile Contour (Forehead, Nose, Lips, Chin, Jawline) -->
+    <path d="M68,18 
+             L73,23 
+             L72,25 
+             L78,34 
+             L74,36 
+             L75,39 
+             L77,41 
+             L74,42 
+             L76,44 
+             L73,45 
+             L75,48 
+             L70,51 
+             L60,47 
+             Z" fill="url(#skinSide)"/>
 
-    <!-- Eyebrow: angled detective look -->
-    <path d="M70,20 Q76,16 82,18" stroke="#3d2810" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M70,21 Q76,17 82,19" stroke="#2a1a08" stroke-width="1" fill="none" opacity="0.4"/>
+    <!-- Facial Contour details -->
+    <path d="M72,26 L77.5,34 L74,35.5" stroke="#fce4c8" stroke-width="0.8" fill="none" opacity="0.7"/>
+    <ellipse cx="74.5" cy="35.5" rx="1.5" ry="1" fill="#9e6838" opacity="0.6"/>
 
-    <!-- Eye in profile -->
-    <ellipse cx="76" cy="28" rx="7" ry="5" fill="#c4956a" opacity="0.3"/>
-    <path d="M70,26 Q76,23 80,26 Q80,31 76,32 Q70,31 70,26 Z" fill="#f0f4f0"/>
-    <ellipse cx="76" cy="28" rx="4" ry="4.5" fill="url(#irisGradSide)"/>
-    <circle cx="76" cy="28" r="2.5" fill="#0e1a0a"/>
-    <circle cx="77.5" cy="26.5" r="1.2" fill="#ffffff" opacity="0.9"/>
-    <path d="M70,25 Q76,22 80,25" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M70,30 Q76,33 80,30" stroke="#9c7040" stroke-width="0.8" fill="none" opacity="0.5"/>
-    <line x1="72" y1="24" x2="72" y2="22" stroke="#2a1a08" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="75" y1="23" x2="75" y2="21" stroke="#2a1a08" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="78" y1="24" x2="79" y2="22" stroke="#2a1a08" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Profile Lips -->
+    <path d="M74,39 Q76.5,40.5 77,41 L74.5,41.5 Z" fill="#b86b52"/>
+    <path d="M74,42 Q76,42.5 75.8,44 L73.5,43.5 Z" fill="#cb7e66"/>
+    <path d="M73,45 Q74.5,46 73.5,47" stroke="#b88450" stroke-width="0.8" fill="none" opacity="0.5"/>
 
-    <!-- Nose in profile -->
-    <path d="M74,26 L78,38" stroke="#c49060" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M76,38 Q80,36 84,40 Q82,44 78,43 Q75,42 76,38 Z" fill="#d4a060"/>
-    <ellipse cx="79" cy="43" rx="3.5" ry="2.5" fill="#b87840" opacity="0.8"/>
-    <line x1="76" y1="28" x2="79" y2="38" stroke="#f0c080" stroke-width="0.8" opacity="0.5"/>
+    <!-- Defined Jawline -->
+    <path d="M58,38 L64,45 L71,49 L74,48" stroke="#be8a56" stroke-width="1.2" fill="none" opacity="0.6"/>
+    <ellipse cx="67" cy="34" rx="5" ry="3.5" fill="#f0be92" opacity="0.3" transform="rotate(-10 67 34)"/>
 
-    <!-- Philtrum -->
-    <path d="M78,44 Q76,47 76,50" stroke="#c09060" stroke-width="1" fill="none" opacity="0.6"/>
+    <!-- Profile Eye (True anatomical wedge profile) -->
+    <path d="M66,26 Q71,24 74,27 Q70,30 66,29 Z" fill="#d9a877" opacity="0.3"/>
+    <path d="M68,26 L74,27.5 L69,30 Z" fill="#f4f6f4"/>
+    <path d="M70.5,26.8 Q73.8,27.5 73.5,29.2 Q71.5,30 70,29.2 Z" fill="url(#irisGradSide)"/>
+    <ellipse cx="72" cy="28.2" rx="1.2" ry="1.6" fill="#0b1408"/>
+    <circle cx="72.5" cy="27.4" r="0.7" fill="#ffffff"/>
+    <path d="M66,25 Q71,23.5 74.5,26" stroke="#221406" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <path d="M67,23.5 Q71,22.5 74,24.5" stroke="#a06c3a" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <line x1="74" y1="26" x2="75.5" y2="25" stroke="#221406" stroke-width="1.2" stroke-linecap="round"/>
 
-    <!-- Mouth in profile -->
-    <path d="M72,50 Q76,47 82,50 L80,52 Q76,49 74,52 Z" fill="#c07858"/>
-    <path d="M74,52 Q78,56 82,52 L80,54 Q77,57 74,54 Z" fill="#d4896a"/>
-    <ellipse cx="78" cy="53" rx="3" ry="1" fill="#e0a080" opacity="0.4"/>
-    <path d="M72,50 Q70,52 72,54" stroke="#a0604a" stroke-width="1" fill="none" opacity="0.6"/>
+    <!-- Eyebrow: Sharp, focused detective brow -->
+    <path d="M66,21 Q71,18 76,21" stroke="#221406" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M66,21 Q71,18 76,21" stroke="#3d2810" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-    <!-- Jawline and chin -->
-    <path d="M64,52 Q68,58 72,60 Q76,61 80,58" stroke="#c09060" stroke-width="1" fill="none" opacity="0.4"/>
+    <!-- Front hair fringe peeking under fedora brim -->
+    <path d="M67,18 Q71,19 73,22 Q70,21 68,20 Z" fill="#2a1a08"/>
+    <path d="M64,18 Q67,21 69,23 Q66,21 64,19 Z" fill="#3d2810"/>
 
-    <!-- Cheekbone highlight -->
-    <ellipse cx="80" cy="36" rx="6" ry="4" fill="#f5c090" opacity="0.35" transform="rotate(-15 80 36)"/>
+    <!-- Classic Noir Fedora (Profile View) -->
+    <path d="M42,20 Q62,22 84,23 L82,25 Q62,24 42,21 Z" fill="#120e0b" opacity="0.5"/>
+    <ellipse cx="63" cy="18" rx="27" ry="5.5" fill="#1d1611" transform="rotate(-3 63 18)"/>
+    <ellipse cx="63" cy="17" rx="26" ry="4.8" fill="url(#hatGradSide)" transform="rotate(-3 63 17)"/>
+    <path d="M48,16 
+             Q49,6 61,4 
+             Q66,6 72,5 
+             Q76,8 77,16 
+             Z" fill="url(#hatGradSide)"/>
+    <path d="M54,6 Q63,9 71,6" stroke="#18120d" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M70,8 Q74,11 75,15" stroke="#1d1611" stroke-width="1.8" fill="none" opacity="0.7"/>
 
-    <!-- Profile Fedora Hat -->
-    <ellipse cx="68" cy="16" rx="36" ry="9" fill="#2a221b" transform="rotate(-4, 68, 16)"/>
-    <ellipse cx="68" cy="14" rx="34" ry="7.5" fill="url(#hatGradSide)" transform="rotate(-4, 68, 14)"/>
-    <path d="M48,12 Q52,2 68,2 Q82,2 84,12 Z" fill="url(#hatGradSide)"/>
-    <path d="M56,4 Q68,10 80,4" stroke="#1d1611" stroke-width="2.5" fill="none"/>
-    <path d="M48,12 Q68,14 84,11 L84,8 Q68,11 48,9 Z" fill="#15171a"/>
-    <circle cx="56" cy="10" r="3" fill="#dfb15b" stroke="#b88c38" stroke-width="0.5"/>
-    <circle cx="56" cy="10" r="1.5" fill="#b88c38"/>
+    <!-- Hat Ribbon Band & Badge -->
+    <path d="M47.5,16 Q63,18 77.2,15.5 L77.5,13 Q63,15 47.8,13.5 Z" fill="#181a1d"/>
+    <line x1="47.6" y1="16" x2="77.2" y2="15.5" stroke="#0e1012" stroke-width="0.8"/>
+    <circle cx="58" cy="14.5" r="2.2" fill="#dfb15b" stroke="#8a681a" stroke-width="0.6"/>
+    <circle cx="58" cy="14.5" r="1.1" fill="#b88c38"/>
   </g>
 </svg>"""
 
@@ -537,10 +581,10 @@ def get_character_animations() -> dict:
         render_svg(_generate_detective_side_svg(bob_y=1), W, H),
     ]
     right_walk = [
-        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=4, f_leg_dy=-3, b_leg_dx=-4, b_leg_dy=3, f_arm_rot=-14, b_arm_rot=14, coat_flare=3), W, H),
-        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=0, f_leg_dy=0, b_leg_dx=0, b_leg_dy=0, f_arm_rot=0, b_arm_rot=0, coat_flare=0), W, H),
-        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=-4, f_leg_dy=3, b_leg_dx=4, b_leg_dy=-3, f_arm_rot=14, b_arm_rot=-14, coat_flare=1), W, H),
-        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=0, f_leg_dy=0, b_leg_dx=0, b_leg_dy=0, f_arm_rot=0, b_arm_rot=0, coat_flare=0), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=4, f_leg_dy=-2, b_leg_dx=-5, b_leg_dy=2, f_arm_rot=-16, b_arm_rot=16, coat_flare=3), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=1, f_leg_dy=0, b_leg_dx=-1, b_leg_dy=0, f_arm_rot=-4, b_arm_rot=4, coat_flare=1), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=0, f_leg_dx=-5, f_leg_dy=2, b_leg_dx=4, b_leg_dy=-2, f_arm_rot=16, b_arm_rot=-16, coat_flare=2), W, H),
+        render_svg(_generate_detective_side_svg(bob_y=1, f_leg_dx=-1, f_leg_dy=0, b_leg_dx=1, b_leg_dy=0, f_arm_rot=4, b_arm_rot=-4, coat_flare=1), W, H),
     ]
 
     # Left animations (Flipped horizontally from Right for perfect frame symmetry)
