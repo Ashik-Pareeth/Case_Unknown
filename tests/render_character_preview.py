@@ -4,6 +4,7 @@ Generates a side-by-side preview sheet of all directional character animations.
 
 import os
 import sys
+
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -22,7 +23,9 @@ sheet = pygame.Surface((620, 430))
 sheet.fill((22, 25, 31))
 
 # Headers
-title = font.render("CASE UNKNOWN — DETECTIVE SPRITE ANIMATION SHEET", True, (215, 185, 125))
+title = font.render(
+    "CASE UNKNOWN — DETECTIVE SPRITE ANIMATION SHEET", True, (215, 185, 125)
+)
 sheet.blit(title, (20, 15))
 
 sheet.blit(label_font.render("IDLE (2 Frames)", True, (150, 160, 175)), (120, 42))
@@ -47,6 +50,6 @@ for direction in ["down", "up", "right", "left"]:
     pygame.draw.line(sheet, (35, 40, 50), (20, y + 84), (600, y + 84), 1)
     y += 90
 
-out_path = r"C:\Users\Ashik\.gemini\antigravity-ide\brain\2a518bfa-f396-401c-8440-d553ff6ecb36\character_preview.png"
+out_path = r"C:/Users/Ashik/MyProjects/mypython/Case_Unknown/tests/output/character_preview.png"
 pygame.image.save(sheet, out_path)
 print("Saved preview to:", out_path)
