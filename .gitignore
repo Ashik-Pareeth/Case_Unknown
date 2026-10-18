@@ -17,3 +17,5 @@ CASE UNKNOWN — Complete Project A.txt
 
 # Unused legacy raster images
 assets/images/
+
+tests/output
