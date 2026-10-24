@@ -135,41 +135,17 @@ class InteractionManager:
         surface.blit(self.badge_surface, (prompt_x, prompt_y))
 
     def draw_dialogue(self, surface: pygame.Surface):
-        """Renders the noir detective inspection panel overlay."""
+        """Renders the noir detective inspection panel overlay with dynamic height to prevent text overflow."""
         if not self.is_inspecting or self.active_object is None:
             return
 
-        # Modal Dimensions
-        panel_w = 640
-        panel_h = 220
-        panel_x = (SCREEN_WIDTH - panel_w) // 2
-        panel_y = SCREEN_HEIGHT - panel_h - 40
-
-        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
-
-        # Semi-transparent background surface
-        panel_surf = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
-        panel_surf.fill(UI_PANEL_BG)
-
-        # Decorative Brass Border
-        pygame.draw.rect(panel_surf, UI_PANEL_BORDER, (0, 0, panel_w, panel_h), 2, border_radius=8)
-        pygame.draw.rect(panel_surf, (80, 65, 38), (4, 4, panel_w - 8, panel_h - 8), 1, border_radius=6)
-
-        surface.blit(panel_surf, (panel_x, panel_y))
-
-        # Title / Object Name
-        title_surf = self.title_font.render(self.active_object.name.upper(), True, UI_TEXT_TITLE)
-        surface.blit(title_surf, (panel_x + 28, panel_y + 20))
-
-        # Divider line
-        div_y = panel_y + 48
-        pygame.draw.line(surface, UI_PANEL_BORDER, (panel_x + 26, div_y), (panel_x + panel_w - 26, div_y), 1)
+        panel_w = 680
+        max_w = panel_w - 56
 
         # Word-wrapped Body Text
         words = self.active_object.description.split(" ")
         lines = []
         cur_line = []
-        max_w = panel_w - 56
 
         for w in words:
             test_line = " ".join(cur_line + [w])
@@ -181,12 +157,46 @@ class InteractionManager:
         if cur_line:
             lines.append(" ".join(cur_line))
 
-        text_y = div_y + 14
+        # Dynamic height to ensure text never overflows
+        line_height = 24
+        header_height = 62
+        footer_height = 34
+        content_height = len(lines) * line_height
+        panel_h = max(180, header_height + content_height + footer_height)
+        panel_x = (SCREEN_WIDTH - panel_w) // 2
+        panel_y = SCREEN_HEIGHT - panel_h - 26
+
+        # Semi-transparent background surface
+        panel_surf = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+        panel_surf.fill(UI_PANEL_BG)
+
+        # Decorative Brass Border
+        pygame.draw.rect(panel_surf, UI_PANEL_BORDER, (0, 0, panel_w, panel_h), 2, border_radius=8)
+        pygame.draw.rect(panel_surf, (80, 65, 38), (4, 4, panel_w - 8, panel_h - 8), 1, border_radius=6)
+
+        surface.blit(panel_surf, (panel_x, panel_y))
+
+        # Title / Object Name (Clamped to prevent header overflow)
+        title_text = self.active_object.name.upper()
+        if self.title_font.size(title_text)[0] > max_w:
+            while title_text and self.title_font.size(title_text + "...")[0] > max_w:
+                title_text = title_text[:-1]
+            title_text += "..."
+        title_surf = self.title_font.render(title_text, True, UI_TEXT_TITLE)
+        surface.blit(title_surf, (panel_x + 28, panel_y + 16))
+
+        # Divider line
+        div_y = panel_y + 48
+        pygame.draw.line(surface, UI_PANEL_BORDER, (panel_x + 26, div_y), (panel_x + panel_w - 26, div_y), 1)
+
+        # Body lines
+        text_y = div_y + 12
         for line in lines:
             rendered_line = self.body_font.render(line, True, UI_TEXT_BODY)
             surface.blit(rendered_line, (panel_x + 28, text_y))
-            text_y += 24
+            text_y += line_height
 
         # Action hint footer
         hint_surf = self.hint_font.render("Press [E] or [SPACE] to close", True, UI_TEXT_MUTED)
-        surface.blit(hint_surf, (panel_x + panel_w - hint_surf.get_width() - 28, panel_y + panel_h - 30))
+        surface.blit(hint_surf, (panel_x + panel_w - hint_surf.get_width() - 28, panel_y + panel_h - 28))
+

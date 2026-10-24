@@ -251,6 +251,114 @@ def test_menu_system_navigation():
     menu.draw(surf, has_active_game=True)
 
 
+def test_experience_system():
+    """Verify player EXP progression, level promotion thresholds, and HUD widgets."""
+    pygame.init()
+    surf = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    from src.experience import ExperienceManager
+
+    exp = ExperienceManager()
+    lvl, rank = exp.level_and_rank
+    assert lvl == 1
+    assert rank == "Junior Trainee"
+    assert exp.total_exp == 0
+
+    # Progress at lvl 1
+    cur, needed, ratio = exp.get_level_progress()
+    assert cur == 0
+    assert needed == 150
+    assert ratio == 0.0
+
+    # Gain 150 EXP -> Promote to LVL 2 Field Detective
+    res = exp.add_experience(150, "Recovered Keycard")
+    assert res["total_exp"] == 150
+    assert res["leveled_up"] is True
+    assert res["new_level"] == 2
+    assert res["rank"] == "Field Detective"
+
+    # Gain 150 EXP -> LVL 3 Senior Investigator
+    res2 = exp.add_experience(150, "Recovered Syndicate Ledger")
+    assert res2["new_level"] == 3
+    assert res2["rank"] == "Senior Investigator"
+
+    # Update timers and draw notifications & HUD widget
+    exp.update(0.016)
+    assert exp.active_notification is not None
+    exp.draw_notification(surf)
+    exp.draw_hud_widget(surf, 50, 10, width=220, height=32)
+
+
+def test_evidence_reveal_modal():
+    """Verify animated confidential evidence and crime scene photo reveal modal."""
+    pygame.init()
+    surf = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    from src.treasure import TreasureManager
+    from src.experience import ExperienceManager
+    from src.evidence_reveal import EvidenceRevealModal
+
+    tm = TreasureManager()
+    exp = ExperienceManager()
+
+    for item_id, item in tm.treasures.items():
+        modal = EvidenceRevealModal(item, exp)
+        assert modal.is_closed is False
+        assert modal.item.item_id == item_id
+
+        # Update animation ticks
+        modal.update(0.3)
+        assert modal.anim_time >= 0.3
+
+        # Draw modal with polaroid photo artwork and typewriter text
+        modal.draw(surf)
+
+        # Handle dismiss event (Spacebar)
+        event_space = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_SPACE})
+        consumed = modal.handle_event(event_space)
+        assert consumed is True
+        assert modal.is_closed is True
+
+
+def test_text_overflow_fixes():
+    """Verify that long dialogue, long puzzle hints, and dossier cards wrap without crashing."""
+    pygame.init()
+    surf = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    from src.interaction import InteractionManager, Interactable
+    from src.treasure import TreasureManager
+    from src.menu import MenuSystem
+    from src.experience import ExperienceManager
+    from src.puzzles import NumberLockPuzzle
+
+    # 1. Very long dialogue in dialogue box
+    im = InteractionManager()
+    long_desc = "A" * 50 + " " + "B" * 50 + " " + "This is an extremely long multi-line description that should wrap properly across many lines." * 3
+    obj = Interactable("long_obj", "Extremely Long Object Name Over 40 Characters", long_desc, pygame.Rect(10, 10, 20, 20), (10, 10))
+    im.active_object = obj
+    im.is_inspecting = True
+    im.draw_dialogue(surf)
+
+    # 2. Very long hint in NumberLockPuzzle
+    p = NumberLockPuzzle(
+        title="Test Lock",
+        target_code=[1, 2, 3],
+        hint="This is a very long hint that previously caused text box overflowing because it exceeded the modal width boundary." * 2,
+        reward_name="Reward Item"
+    )
+    p.show_hint = True
+    p.draw(surf)
+
+    # 3. Evidence dossier cards with both locked and unlocked items
+    tm = TreasureManager()
+    tm.unlock_treasure("office_safe")
+    tm.unlock_treasure("archive_vault")
+    exp = ExperienceManager()
+    menu = MenuSystem(tm, exp)
+    menu.current_screen = "EVIDENCE"
+    menu.draw(surf, has_active_game=True)
+
+
 def test_no_references_to_images_directory():
     """Verify that source code and asset python modules never load files from assets/images."""
     src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -277,5 +385,9 @@ if __name__ == "__main__":
     test_blueprint_map_view()
     test_menu_system_navigation()
     test_no_references_to_images_directory()
+    test_experience_system()
+    test_evidence_reveal_modal()
+    test_text_overflow_fixes()
     print("ALL TESTS PASSED SUCCESSFULLY!")
+
 

@@ -22,14 +22,17 @@ from src.settings import (
     UI_SUCCESS_GREEN,
     UI_HIGHLIGHT_RED,
 )
+from typing import Optional
 from src.treasure import TreasureManager
+from src.experience import ExperienceManager
 
 
 class MenuSystem:
     """Manages the title screen, in-game pause menu, and dossier sub-screens."""
 
-    def __init__(self, treasure_mgr: TreasureManager):
+    def __init__(self, treasure_mgr: TreasureManager, exp_mgr: Optional[ExperienceManager] = None):
         self.treasure_mgr = treasure_mgr
+        self.exp_mgr = exp_mgr
         self.current_screen = "MAIN"  # "MAIN", "EVIDENCE", "CONTROLS"
         self.selected_idx = 0
         self.anim_time = 0.0
@@ -40,7 +43,7 @@ class MenuSystem:
         self.font_sublogo = pygame.font.SysFont("georgia", 14, italic=True)
         self.font_btn = pygame.font.SysFont("segoeui", 16, bold=True)
         self.font_card_title = pygame.font.SysFont("georgia", 15, bold=True)
-        self.font_card_body = pygame.font.SysFont("segoeui", 13)
+        self.font_card_body = pygame.font.SysFont("segoeui", 12)
         self.font_card_sub = pygame.font.SysFont("segoeui", 11, italic=True)
 
         # Main Menu Options
@@ -205,47 +208,64 @@ class MenuSystem:
         prog = self.treasure_mgr.get_progress_percentage()
         unlocked_count = len(self.treasure_mgr.get_all_unlocked())
         total_count = len(self.treasure_mgr.treasures)
-        footer_txt = self.font_card_sub.render(
-            f"Case Investigation Status: {unlocked_count}/{total_count} Evidence Items Recovered ({prog}% Complete)",
-            True,
-            UI_TEXT_MUTED,
-        )
+
+        if self.exp_mgr:
+            lvl, rank_name = self.exp_mgr.level_and_rank
+            status_line = (
+                f"Rank: LVL {lvl} {rank_name}  •  Evidence: {unlocked_count}/{total_count} ({prog}% Complete)  •  EXP: {self.exp_mgr.total_exp}"
+            )
+        else:
+            status_line = (
+                f"Case Investigation Status: {unlocked_count}/{total_count} Evidence Items Recovered ({prog}% Complete)"
+            )
+
+        footer_txt = self.font_card_sub.render(status_line, True, UI_TEXT_MUTED)
         surface.blit(footer_txt, ((SCREEN_WIDTH - footer_txt.get_width()) // 2, SCREEN_HEIGHT - 35))
 
     def _draw_evidence_dossier(self, surface: pygame.Surface):
-        # Modal Box
-        box_w = 740
-        box_h = 420
+        # Modal Box (expanded geometry for perfect card margins)
+        box_w = 750
+        box_h = 430
         box_x = (SCREEN_WIDTH - box_w) // 2
-        box_y = 175
+        box_y = 145
         box_rect = pygame.Rect(box_x, box_y, box_w, box_h)
 
         pygame.draw.rect(surface, (18, 22, 28, 245), box_rect, border_radius=8)
         pygame.draw.rect(surface, UI_PANEL_BORDER, box_rect, 2, border_radius=8)
 
-        # Header
+        # Header Title
         d_title = self.font_card_title.render("CASE EVIDENCE DOSSIER — CONFIDENTIAL RECOVERIES", True, UI_TEXT_TITLE)
-        surface.blit(d_title, (box_x + 24, box_y + 18))
+        surface.blit(d_title, (box_x + 20, box_y + 14))
+
+        # Detective Rank Credential (Header Right)
+        if self.exp_mgr:
+            lvl, rank_name = self.exp_mgr.level_and_rank
+            rank_txt = self.font_card_sub.render(
+                f"DETECTIVE: LVL {lvl} {rank_name.upper()}  |  {self.exp_mgr.total_exp} EXP",
+                True,
+                UI_ACCENT_GOLD,
+            )
+            surface.blit(rank_txt, (box_x + box_w - rank_txt.get_width() - 20, box_y + 16))
 
         # List all 5 treasures
         items = list(self.treasure_mgr.treasures.values())
-        card_w = box_w - 48
-        card_h = 60
-        card_spacing = 10
-        start_y = box_y + 50
+        card_w = box_w - 40
+        card_h = 62
+        card_spacing = 8
+        start_y = box_y + 44
 
         for i, item in enumerate(items):
-            c_rect = pygame.Rect(box_x + 24, start_y + i * (card_h + card_spacing), card_w, card_h)
+            c_rect = pygame.Rect(box_x + 20, start_y + i * (card_h + card_spacing), card_w, card_h)
 
             if item.is_unlocked:
-                bg = (26, 36, 30)
+                bg = (24, 34, 28)
                 border_c = UI_SUCCESS_GREEN
                 name_c = (235, 245, 235)
                 status_badge = "[RECOVERED]"
                 badge_c = UI_SUCCESS_GREEN
                 desc_text = f"{item.reward_name}: {item.reward_description}"
             else:
-                bg = (22, 24, 30)
+                bg = (20, 22, 28)
                 border_c = (60, 65, 75)
                 name_c = (140, 145, 155)
                 status_badge = "[LOCKED]"
@@ -257,18 +277,40 @@ class MenuSystem:
 
             # Name & Badge
             t_name = self.font_card_title.render(f"{i+1}. {item.name}", True, name_c)
-            surface.blit(t_name, (c_rect.x + 12, c_rect.y + 10))
+            surface.blit(t_name, (c_rect.x + 12, c_rect.y + 7))
 
             badge_s = self.font_card_sub.render(status_badge, True, badge_c)
-            surface.blit(badge_s, (c_rect.right - badge_s.get_width() - 12, c_rect.y + 12))
+            surface.blit(badge_s, (c_rect.right - badge_s.get_width() - 12, c_rect.y + 9))
 
-            # Description
-            desc_s = self.font_card_body.render(desc_text, True, (190, 195, 205) if item.is_unlocked else (110, 115, 125))
-            surface.blit(desc_s, (c_rect.x + 12, c_rect.y + 32))
+            # Word-wrap description text to eliminate any overflow
+            max_desc_w = card_w - 24
+            words = desc_text.split(" ")
+            desc_lines = []
+            cur_line = []
+            for w in words:
+                test_str = " ".join(cur_line + [w])
+                if self.font_card_body.size(test_str)[0] <= max_desc_w:
+                    cur_line.append(w)
+                else:
+                    if cur_line:
+                        desc_lines.append(" ".join(cur_line))
+                    cur_line = [w]
+            if cur_line:
+                desc_lines.append(" ".join(cur_line))
+
+            desc_y = c_rect.y + 27
+            for d_line in desc_lines[:2]:
+                desc_s = self.font_card_body.render(
+                    d_line,
+                    True,
+                    (195, 200, 210) if item.is_unlocked else (120, 125, 135),
+                )
+                surface.blit(desc_s, (c_rect.x + 12, desc_y))
+                desc_y += 15
 
         # Close hint
         close_txt = self.font_card_sub.render("Click anywhere or press [ESC] to return to Main Menu", True, UI_ACCENT_GOLD)
-        surface.blit(close_txt, ((SCREEN_WIDTH - close_txt.get_width()) // 2, box_rect.bottom - 24))
+        surface.blit(close_txt, ((SCREEN_WIDTH - close_txt.get_width()) // 2, box_rect.bottom - 22))
 
     def _draw_controls(self, surface: pygame.Surface):
         box_w = 640

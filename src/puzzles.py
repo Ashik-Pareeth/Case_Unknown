@@ -129,19 +129,40 @@ class BasePuzzle:
         btn_hint_surf = self.font_btn.render(hint_label, True, UI_ACCENT_GOLD)
         surface.blit(btn_hint_surf, btn_hint_surf.get_rect(center=self.btn_hint_rect.center))
 
-        # Hint Box (when toggled)
+        # Hint Box (when toggled with multi-line word wrapping)
         if self.show_hint:
-            hint_box_rect = pygame.Rect(self.modal_x + 30, self.modal_y + self.modal_h - 130, self.modal_w - 60, 52)
-            pygame.draw.rect(surface, (18, 22, 28, 245), hint_box_rect, border_radius=4)
-            pygame.draw.rect(surface, (140, 115, 65), hint_box_rect, 1, border_radius=4)
-            hint_txt = self.font_hint.render(f"Detective Note: \"{self.hint}\"", True, (240, 225, 175))
-            surface.blit(hint_txt, (hint_box_rect.x + 12, hint_box_rect.y + 16))
+            full_hint_text = f"Detective Note: \"{self.hint}\""
+            max_hint_w = self.modal_w - 90
+            words = full_hint_text.split(" ")
+            hint_lines = []
+            cur_line = []
+            for w in words:
+                test = " ".join(cur_line + [w])
+                if self.font_hint.size(test)[0] <= max_hint_w:
+                    cur_line.append(w)
+                else:
+                    hint_lines.append(" ".join(cur_line))
+                    cur_line = [w]
+            if cur_line:
+                hint_lines.append(" ".join(cur_line))
+
+            box_h = max(48, 16 + len(hint_lines) * 20)
+            hint_box_rect = pygame.Rect(self.modal_x + 30, self.modal_y + self.modal_h - 78 - box_h, self.modal_w - 60, box_h)
+            pygame.draw.rect(surface, (18, 22, 28, 245), hint_box_rect, border_radius=5)
+            pygame.draw.rect(surface, (140, 115, 65), hint_box_rect, 1, border_radius=5)
+
+            hy = hint_box_rect.y + 10
+            for line in hint_lines:
+                ht_surf = self.font_hint.render(line, True, (240, 225, 175))
+                surface.blit(ht_surf, (hint_box_rect.x + 14, hy))
+                hy += 20
 
         # Feedback Message Banner
         if self.feedback_message:
             fb_surf = self.font_btn.render(self.feedback_message, True, self.feedback_color)
             fb_rect = fb_surf.get_rect(center=(self.modal_x + self.modal_w // 2, self.modal_y + self.modal_h - 146))
             surface.blit(fb_surf, fb_rect)
+
 
 
 class NumberLockPuzzle(BasePuzzle):
