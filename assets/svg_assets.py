@@ -36,6 +36,12 @@ from assets.props import (
     SVG_POTTED_PLANT,
     SVG_WALL_SCONCE,
     SVG_INTERACTION_BADGE,
+    SVG_WALL_SAFE,
+    SVG_AUTOPSY_TABLE,
+    SVG_PRISON_BARS,
+    SVG_INTERROGATION_TABLE,
+    SVG_TREASURE_CHEST,
+    SVG_SPECIMEN_CABINET,
     get_room_objects,
 )
 
@@ -64,5 +70,12 @@ __all__ = [
     "SVG_POTTED_PLANT",
     "SVG_WALL_SCONCE",
     "SVG_INTERACTION_BADGE",
+    "SVG_WALL_SAFE",
+    "SVG_AUTOPSY_TABLE",
+    "SVG_PRISON_BARS",
+    "SVG_INTERROGATION_TABLE",
+    "SVG_TREASURE_CHEST",
+    "SVG_SPECIMEN_CABINET",
     "get_room_objects",
 ]
+

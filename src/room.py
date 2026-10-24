@@ -1,5 +1,12 @@
 """
-Detective office room environment, parquet flooring, furniture placement, and collision structures.
+Reusable Room Environment, Architectural Customization, Flooring, and Doorways for Case Unknown.
+
+Provides the single customizable Room class that instantiates any precinct sector:
+- Dynamic flooring: Parquet mahogany, Ceramic forensic tiles, Concrete slabs, Rough stone.
+- Doorway passages: Cut-outs in perimeter walls with entry zones and room transitions.
+- Furniture and prop placement with layered depth-sorting and solid collision hitboxes.
+- Atmospheric lighting layers: Warm desk lamps, Wall sconces, Window moonlight rays.
+- Interactive clues and treasure points with puzzle hooks.
 """
 
 import pygame
@@ -9,7 +16,10 @@ from src.settings import (
     ROOM_WIDTH,
     ROOM_HEIGHT,
     WALL_THICKNESS,
-    COLOR_BG,
+    DOOR_SIZE,
+    DOOR_THICKNESS,
+    DOOR_FRAME_COLOR,
+    DOOR_PASSAGE_COLOR,
     COLOR_WALL,
     COLOR_WALL_TOP,
     COLOR_WALL_BASE,
@@ -19,15 +29,34 @@ from src.settings import (
 )
 from assets.svg_assets import get_room_objects
 from src.interaction import InteractionManager
+from src.rooms_data import ROOMS_DATA
 
 
 class Room:
-    def __init__(self, interaction_mgr: InteractionManager):
+    """
+    Modular, reusable precinct room that dynamically customizes its appearance,
+    doors, collision geometry, lighting, and interactables based on room definition data.
+    """
+
+    def __init__(
+        self,
+        interaction_mgr: InteractionManager,
+        room_id: str = "office",
+        room_data: dict = None,
+        treasure_mgr=None,
+    ):
+        self.room_id = room_id
+        self.data = room_data if room_data is not None else ROOMS_DATA.get(room_id, ROOMS_DATA["office"])
+        self.name = self.data.get("name", "Precinct Room")
+        self.subtitle = self.data.get("subtitle", "")
+        self.treasure_mgr = treasure_mgr
+
+        # Room bounds
         self.rect = pygame.Rect(ROOM_X, ROOM_Y, ROOM_WIDTH, ROOM_HEIGHT)
         self.wall_thickness = WALL_THICKNESS
-        self.top_wall_height = 80  # Wall area for windows and board
+        self.top_wall_height = 80  # Top wall zone for windows/boards
 
-        # Floor boundaries
+        # Floor bounds inside the walls
         self.floor_rect = pygame.Rect(
             self.rect.left + self.wall_thickness,
             self.rect.top + self.top_wall_height,
@@ -35,231 +64,346 @@ class Room:
             self.rect.height - self.top_wall_height - self.wall_thickness,
         )
 
-        # 4 Solid Boundary Walls
-        self.walls = [
-            # Top wall
-            pygame.Rect(self.rect.left, self.rect.top, self.rect.width, self.top_wall_height),
-            # Bottom wall
-            pygame.Rect(self.rect.left, self.rect.bottom - self.wall_thickness, self.rect.width, self.wall_thickness),
-            # Left wall
-            pygame.Rect(self.rect.left, self.rect.top, self.wall_thickness, self.rect.height),
-            # Right wall
-            pygame.Rect(self.rect.right - self.wall_thickness, self.rect.top, self.wall_thickness, self.rect.height),
-        ]
+        # Theme colors
+        colors = self.data.get("colors", {})
+        self.color_wall = colors.get("wall", COLOR_WALL)
+        self.color_wall_top = colors.get("wall_top", COLOR_WALL_TOP)
+        self.color_wall_base = colors.get("wall_base", COLOR_WALL_BASE)
+        self.color_floor_a = colors.get("floor_a", COLOR_FLOOR_A)
+        self.color_floor_b = colors.get("floor_b", COLOR_FLOOR_B)
+        self.color_floor_seam = colors.get("floor_seam", COLOR_FLOOR_SEAM)
+        self.floor_style = self.data.get("floor_style", "parquet")
 
-        # Load SVG room props
+        # Load SVG assets
         self.assets = get_room_objects()
 
-        # Build furniture, wall decor, and interactables
+        # Collections
         self.furniture_items = []
         self.wall_decor = []
         self.floor_decor = []
-        self.solid_objects = list(self.walls)
+        self.solid_objects = []
+        self.doorways = []
 
-        self._setup_room(interaction_mgr)
+        # Build walls, doorways, furniture, and interactables
+        self._setup_doorways_and_walls()
+        self._setup_furniture_and_interactables(interaction_mgr)
 
-    def _setup_room(self, interaction_mgr: InteractionManager):
-        # 1. Floor Rug (Centered under executive office zone)
-        rug_surf = self.assets["rug"]
-        rug_rect = rug_surf.get_rect(topleft=(370, 240))
-        self.floor_decor.append({"surface": rug_surf, "rect": rug_rect})
+        # Door font
+        pygame.font.init()
+        self.door_font = pygame.font.SysFont("segoeui", 11, bold=True)
 
-        # 2. Wall Mounted Decor (Rendered on top wall)
-        # Windows with Venetian blinds
-        win_surf = self.assets["window"]
-        win_l_rect = win_surf.get_rect(topleft=(170, 16))
-        win_r_rect = win_surf.get_rect(topleft=(710, 16))
-        self.wall_decor.append({"surface": win_surf, "rect": win_l_rect})
-        self.wall_decor.append({"surface": win_surf, "rect": win_r_rect})
+    def _setup_doorways_and_walls(self):
+        """Constructs solid walls with doorway passages leaving openings for travel."""
+        doors_config = self.data.get("doors", [])
+        doors_by_wall = {d["wall"]: d for d in doors_config}
 
-        interaction_mgr.add_object(
-            obj_id="window_left",
-            name="Venetian Blind Window",
-            description="Cold rain trickles down the dark window glass. The streetlamps outside cast long, wet shadows across the alley below.",
-            trigger_rect=pygame.Rect(160, 95, 100, 50),
-            badge_pos=(210, 110),
-        )
+        # 1. TOP WALL
+        if "top" in doors_by_wall:
+            door = doors_by_wall["top"]
+            dw = DOOR_SIZE
+            dx = self.rect.centerx - dw // 2
+            # Left segment
+            w_left = pygame.Rect(self.rect.left, self.rect.top, dx - self.rect.left, self.top_wall_height)
+            # Right segment
+            w_right = pygame.Rect(dx + dw, self.rect.top, self.rect.right - (dx + dw), self.top_wall_height)
+            self.solid_objects.extend([w_left, w_right])
 
-        # Evidence Pinboard (Centered against top wall)
-        board_surf = self.assets["evidence_board"]
-        board_rect = board_surf.get_rect(topleft=(395, 20))
-        self.wall_decor.append({"surface": board_surf, "rect": board_rect})
+            # Doorway Trigger Zone
+            trigger_rect = pygame.Rect(dx + 10, self.rect.top + self.top_wall_height - 18, dw - 20, 24)
+            self.doorways.append({
+                "wall": "top",
+                "rect": pygame.Rect(dx, self.rect.top + self.top_wall_height - 12, dw, 16),
+                "trigger_rect": trigger_rect,
+                "target_room": door["target_room"],
+                "target_pos": door["target_pos"],
+                "label": door.get("label", "North Door"),
+            })
+        else:
+            self.solid_objects.append(
+                pygame.Rect(self.rect.left, self.rect.top, self.rect.width, self.top_wall_height)
+            )
 
-        interaction_mgr.add_object(
-            obj_id="evidence_board",
-            name="Evidence Pinboard",
-            description="Crime scene photographs linked together by taut red twine. At the center is a recurring symbol—a peculiar crimson spiral discovered at seemingly unrelated crime scenes across the district.",
-            trigger_rect=pygame.Rect(385, 95, 190, 50),
-            badge_pos=(480, 105),
-        )
+        # 2. BOTTOM WALL
+        if "bottom" in doors_by_wall:
+            door = doors_by_wall["bottom"]
+            dw = DOOR_SIZE
+            dx = self.rect.centerx - dw // 2
+            by = self.rect.bottom - self.wall_thickness
+            # Left segment
+            w_left = pygame.Rect(self.rect.left, by, dx - self.rect.left, self.wall_thickness)
+            # Right segment
+            w_right = pygame.Rect(dx + dw, by, self.rect.right - (dx + dw), self.wall_thickness)
+            self.solid_objects.extend([w_left, w_right])
 
-        # Wall Sconces
-        sconce_surf = self.assets["sconce"]
-        sconce_1 = sconce_surf.get_rect(topleft=(90, 35))
-        sconce_2 = sconce_surf.get_rect(topleft=(830, 35))
-        self.wall_decor.append({"surface": sconce_surf, "rect": sconce_1})
-        self.wall_decor.append({"surface": sconce_surf, "rect": sconce_2})
+            # Doorway Trigger Zone
+            trigger_rect = pygame.Rect(dx + 10, by - 6, dw - 20, 24)
+            self.doorways.append({
+                "wall": "bottom",
+                "rect": pygame.Rect(dx, by, dw, self.wall_thickness),
+                "trigger_rect": trigger_rect,
+                "target_room": door["target_room"],
+                "target_pos": door["target_pos"],
+                "label": door.get("label", "South Door"),
+            })
+        else:
+            self.solid_objects.append(
+                pygame.Rect(self.rect.left, self.rect.bottom - self.wall_thickness, self.rect.width, self.wall_thickness)
+            )
+
+        # 3. LEFT WALL
+        if "left" in doors_by_wall:
+            door = doors_by_wall["left"]
+            dh = DOOR_SIZE
+            dy = self.floor_rect.centery - dh // 2
+            # Top segment
+            w_top = pygame.Rect(self.rect.left, self.rect.top, self.wall_thickness, dy - self.rect.top)
+            # Bottom segment
+            w_bottom = pygame.Rect(self.rect.left, dy + dh, self.wall_thickness, self.rect.bottom - (dy + dh))
+            self.solid_objects.extend([w_top, w_bottom])
+
+            # Doorway Trigger Zone
+            trigger_rect = pygame.Rect(self.rect.left - 4, dy + 10, 24, dh - 20)
+            self.doorways.append({
+                "wall": "left",
+                "rect": pygame.Rect(self.rect.left, dy, self.wall_thickness, dh),
+                "trigger_rect": trigger_rect,
+                "target_room": door["target_room"],
+                "target_pos": door["target_pos"],
+                "label": door.get("label", "West Door"),
+            })
+        else:
+            self.solid_objects.append(
+                pygame.Rect(self.rect.left, self.rect.top, self.wall_thickness, self.rect.height)
+            )
+
+        # 4. RIGHT WALL
+        if "right" in doors_by_wall:
+            door = doors_by_wall["right"]
+            dh = DOOR_SIZE
+            dy = self.floor_rect.centery - dh // 2
+            rx = self.rect.right - self.wall_thickness
+            # Top segment
+            w_top = pygame.Rect(rx, self.rect.top, self.wall_thickness, dy - self.rect.top)
+            # Bottom segment
+            w_bottom = pygame.Rect(rx, dy + dh, self.wall_thickness, self.rect.bottom - (dy + dh))
+            self.solid_objects.extend([w_top, w_bottom])
+
+            # Doorway Trigger Zone
+            trigger_rect = pygame.Rect(rx - 8, dy + 10, 24, dh - 20)
+            self.doorways.append({
+                "wall": "right",
+                "rect": pygame.Rect(rx, dy, self.wall_thickness, dh),
+                "trigger_rect": trigger_rect,
+                "target_room": door["target_room"],
+                "target_pos": door["target_pos"],
+                "label": door.get("label", "East Door"),
+            })
+        else:
+            self.solid_objects.append(
+                pygame.Rect(self.rect.right - self.wall_thickness, self.rect.top, self.wall_thickness, self.rect.height)
+            )
+
+    def _setup_furniture_and_interactables(self, interaction_mgr: InteractionManager):
+        """Places SVG furniture items and connects them to the interaction system."""
+        # Clean interaction manager for new room
+        interaction_mgr.clear()
+        if self.treasure_mgr is not None:
+            interaction_mgr.treasure_manager = self.treasure_mgr
+
+        # 1. Floor Decor (Rugs, etc.)
+        for item in self.data.get("floor_decor", []):
+            prop_key = item["prop"]
+            if prop_key in self.assets:
+                surf = self.assets[prop_key]
+                rect = surf.get_rect(topleft=item["pos"])
+                self.floor_decor.append({"surface": surf, "rect": rect})
+
+        # 2. Wall Decor (Windows, Evidence Board, Sconces)
+        for item in self.data.get("wall_decor", []):
+            prop_key = item["prop"]
+            if prop_key in self.assets:
+                surf = self.assets[prop_key]
+                rect = surf.get_rect(topleft=item["pos"])
+                self.wall_decor.append({"surface": surf, "rect": rect})
 
         # 3. Solid Depth-Sorted Furniture
-        # Bookshelf (Upper left corner)
-        shelf_surf = self.assets["bookshelf"]
-        shelf_rect = shelf_surf.get_rect(topleft=(100, 105))
-        shelf_hitbox = pygame.Rect(102, 185, 80, 48)
-        self.furniture_items.append({
-            "surface": shelf_surf,
-            "rect": shelf_rect,
-            "hitbox": shelf_hitbox,
-            "sort_y": shelf_hitbox.bottom,
-        })
-        self.solid_objects.append(shelf_hitbox)
+        for f in self.data.get("furniture", []):
+            prop_key = f["prop"]
+            if prop_key in self.assets:
+                surf = self.assets[prop_key]
+                rect = surf.get_rect(topleft=f["pos"])
+                hitbox_tuple = f["hitbox"]
+                hitbox = pygame.Rect(*hitbox_tuple)
 
-        interaction_mgr.add_object(
-            obj_id="bookshelf",
-            name="Case Archive Library",
-            description="Towering shelves stacked with forensic reference manuals and district penal codes. A confidential binder on 'Internal Audit Protocol' has been pulled forward and hastily closed.",
-            trigger_rect=shelf_hitbox.inflate(40, 40),
-            badge_pos=(shelf_rect.centerx, shelf_rect.top + 20),
-        )
+                self.furniture_items.append({
+                    "surface": surf,
+                    "rect": rect,
+                    "hitbox": hitbox,
+                    "sort_y": hitbox.bottom,
+                })
+                self.solid_objects.append(hitbox)
 
-        # Detective Executive Mahogany Desk
-        desk_surf = self.assets["desk"]
-        desk_rect = desk_surf.get_rect(topleft=(390, 245))
-        # Hitbox covering the pedestal legs & desk depth
-        desk_hitbox = pygame.Rect(398, 290, 164, 65)
-        self.furniture_items.append({
-            "surface": desk_surf,
-            "rect": desk_rect,
-            "hitbox": desk_hitbox,
-            "sort_y": desk_hitbox.bottom,
-        })
-        self.solid_objects.append(desk_hitbox)
+                # Add to interactables
+                is_treasure = f.get("is_treasure", False)
+                treasure_id = f.get("id", "")
+                interaction_mgr.add_object(
+                    obj_id=f["id"],
+                    name=f["name"],
+                    description=f["description"],
+                    trigger_rect=hitbox.inflate(45, 45),
+                    badge_pos=(rect.centerx, rect.top + 20),
+                    is_treasure=is_treasure,
+                    treasure_id=treasure_id,
+                )
 
-        interaction_mgr.add_object(
-            obj_id="desk",
-            name="Detective's Desk",
-            description="Your assigned workstation. Case Dossier #001 lies open under the green banker's lamp. Recent evidence notes describe missing evidence from the precinct lockup.",
-            trigger_rect=desk_hitbox.inflate(50, 50),
-            badge_pos=(desk_rect.centerx, desk_rect.top + 25),
-        )
+        # 4. Standalone Environmental Interactables
+        for inter in self.data.get("interactables", []):
+            interaction_mgr.add_object(
+                obj_id=inter["id"],
+                name=inter["name"],
+                description=inter["description"],
+                trigger_rect=pygame.Rect(*inter["trigger_rect"]),
+                badge_pos=inter["badge_pos"],
+            )
 
-        # Filing Cabinet (Upper right)
-        cab_surf = self.assets["filing_cabinet"]
-        cab_rect = cab_surf.get_rect(topleft=(780, 120))
-        cab_hitbox = pygame.Rect(784, 170, 56, 42)
-        self.furniture_items.append({
-            "surface": cab_surf,
-            "rect": cab_rect,
-            "hitbox": cab_hitbox,
-            "sort_y": cab_hitbox.bottom,
-        })
-        self.solid_objects.append(cab_hitbox)
-
-        interaction_mgr.add_object(
-            obj_id="filing_cabinet",
-            name="Confidential Filing Cabinet",
-            description="Steel drawers containing sealed case records. The lock on the upper drawer displays subtle scratch marks—someone picked the lock without leaving a key entry log.",
-            trigger_rect=cab_hitbox.inflate(45, 45),
-            badge_pos=(cab_rect.centerx, cab_rect.top + 20),
-        )
-
-        # Chesterfield Leather Sofa (Lower left)
-        sofa_surf = self.assets["sofa"]
-        sofa_rect = sofa_surf.get_rect(topleft=(110, 390))
-        sofa_hitbox = pygame.Rect(118, 435, 154, 50)
-        self.furniture_items.append({
-            "surface": sofa_surf,
-            "rect": sofa_rect,
-            "hitbox": sofa_hitbox,
-            "sort_y": sofa_hitbox.bottom,
-        })
-        self.solid_objects.append(sofa_hitbox)
-
-        interaction_mgr.add_object(
-            obj_id="sofa",
-            name="Chesterfield Leather Sofa",
-            description="A vintage deep-burgundy leather sofa for witness interviews. A faint scent of old pipe tobacco and cold damp coat wool still clings to the leather.",
-            trigger_rect=sofa_hitbox.inflate(40, 40),
-            badge_pos=(sofa_rect.centerx, sofa_rect.top + 25),
-        )
-
-        # Potted Office Plant (Lower right)
-        plant_surf = self.assets["plant"]
-        plant_rect = plant_surf.get_rect(topleft=(780, 440))
-        plant_hitbox = pygame.Rect(792, 480, 36, 32)
-        self.furniture_items.append({
-            "surface": plant_surf,
-            "rect": plant_rect,
-            "hitbox": plant_hitbox,
-            "sort_y": plant_hitbox.bottom,
-        })
-        self.solid_objects.append(plant_hitbox)
-
-        interaction_mgr.add_object(
-            obj_id="plant",
-            name="Office Plant",
-            description="A potted monstera. Its glossy green leaves look carefully watered, bringing a rare touch of life to an otherwise austere room.",
-            trigger_rect=plant_hitbox.inflate(35, 35),
-            badge_pos=(plant_rect.centerx, plant_rect.top + 15),
-        )
+    def check_door_transitions(self, player_hitbox: pygame.Rect) -> dict | None:
+        """Returns the door configuration if the player has entered a doorway trigger."""
+        for d in self.doorways:
+            if player_hitbox.colliderect(d["trigger_rect"]):
+                return d
+        return None
 
     def draw_background(self, surface: pygame.Surface):
-        """Draws the room walls and parquet wooden floorboards."""
+        """Draws room walls, custom flooring, baseboards, and wall decor."""
         # 1. Outer room shell and top wall
-        pygame.draw.rect(surface, COLOR_WALL, self.rect)
-        pygame.draw.rect(surface, COLOR_WALL_TOP, (self.rect.left, self.rect.top, self.rect.width, self.top_wall_height))
+        pygame.draw.rect(surface, self.color_wall, self.rect)
+        pygame.draw.rect(
+            surface,
+            self.color_wall_top,
+            (self.rect.left, self.rect.top, self.rect.width, self.top_wall_height),
+        )
 
-        # 2. Hardwood parquet plank floor
-        pygame.draw.rect(surface, COLOR_FLOOR_A, self.floor_rect)
+        # 2. Floor Generation by Style
+        pygame.draw.rect(surface, self.color_floor_a, self.floor_rect)
 
-        plank_h = 24
-        plank_w = 72
-        row = 0
-        for y in range(self.floor_rect.top, self.floor_rect.bottom, plank_h):
-            row += 1
-            x_offset = (row % 2) * (plank_w // 2)
-            for x in range(self.floor_rect.left - x_offset, self.floor_rect.right, plank_w):
-                p_rect = pygame.Rect(x, y, plank_w, plank_h).clip(self.floor_rect)
-                if p_rect.width > 0 and p_rect.height > 0:
-                    color = COLOR_FLOOR_A if (row + (x // plank_w)) % 2 == 0 else COLOR_FLOOR_B
-                    pygame.draw.rect(surface, color, p_rect)
-                    pygame.draw.rect(surface, COLOR_FLOOR_SEAM, p_rect, 1)
+        if self.floor_style == "parquet":
+            # Hardwood parquet plank pattern
+            plank_h = 24
+            plank_w = 72
+            row = 0
+            for y in range(self.floor_rect.top, self.floor_rect.bottom, plank_h):
+                row += 1
+                x_offset = (row % 2) * (plank_w // 2)
+                for x in range(self.floor_rect.left - x_offset, self.floor_rect.right, plank_w):
+                    p_rect = pygame.Rect(x, y, plank_w, plank_h).clip(self.floor_rect)
+                    if p_rect.width > 0 and p_rect.height > 0:
+                        color = self.color_floor_a if (row + (x // plank_w)) % 2 == 0 else self.color_floor_b
+                        pygame.draw.rect(surface, color, p_rect)
+                        pygame.draw.rect(surface, self.color_floor_seam, p_rect, 1)
+
+        elif self.floor_style == "tiles":
+            # Ceramic / clinical square tile pattern
+            tile_size = 36
+            row = 0
+            for y in range(self.floor_rect.top, self.floor_rect.bottom, tile_size):
+                row += 1
+                col = 0
+                for x in range(self.floor_rect.left, self.floor_rect.right, tile_size):
+                    col += 1
+                    t_rect = pygame.Rect(x, y, tile_size, tile_size).clip(self.floor_rect)
+                    if t_rect.width > 0 and t_rect.height > 0:
+                        color = self.color_floor_a if (row + col) % 2 == 0 else self.color_floor_b
+                        pygame.draw.rect(surface, color, t_rect)
+                        pygame.draw.rect(surface, self.color_floor_seam, t_rect, 1)
+
+        elif self.floor_style == "stone":
+            # Heavy stone slab flagstones
+            slab_w = 90
+            slab_h = 45
+            row = 0
+            for y in range(self.floor_rect.top, self.floor_rect.bottom, slab_h):
+                row += 1
+                x_offset = (row % 2) * (slab_w // 3)
+                for x in range(self.floor_rect.left - x_offset, self.floor_rect.right, slab_w):
+                    s_rect = pygame.Rect(x, y, slab_w, slab_h).clip(self.floor_rect)
+                    if s_rect.width > 0 and s_rect.height > 0:
+                        color = self.color_floor_a if (row * 3 + x // slab_w) % 2 == 0 else self.color_floor_b
+                        pygame.draw.rect(surface, color, s_rect)
+                        pygame.draw.rect(surface, self.color_floor_seam, s_rect, 2)
+
+        elif self.floor_style == "concrete":
+            # Smooth dark industrial concrete with expansion lines
+            pygame.draw.rect(surface, self.color_floor_a, self.floor_rect)
+            for y in range(self.floor_rect.top + 90, self.floor_rect.bottom, 120):
+                pygame.draw.line(surface, self.color_floor_seam, (self.floor_rect.left, y), (self.floor_rect.right, y), 2)
+            for x in range(self.floor_rect.left + 140, self.floor_rect.right, 180):
+                pygame.draw.line(surface, self.color_floor_seam, (x, self.floor_rect.top), (x, self.floor_rect.bottom), 2)
 
         # 3. Baseboard trim
-        pygame.draw.rect(surface, COLOR_WALL_BASE, (self.floor_rect.left, self.floor_rect.top - 6, self.floor_rect.width, 6))
+        pygame.draw.rect(
+            surface,
+            self.color_wall_base,
+            (self.floor_rect.left, self.floor_rect.top - 6, self.floor_rect.width, 6),
+        )
 
-        # 4. Outer Wall Borders
-        for w in self.walls:
-            pygame.draw.rect(surface, COLOR_WALL_BASE, w, 2)
+        # 4. Wall Boundaries
+        for solid in self.solid_objects:
+            if solid.width == self.wall_thickness or solid.height in (self.wall_thickness, self.top_wall_height):
+                pygame.draw.rect(surface, self.color_wall_base, solid, 2)
 
-        # 5. Wall Mounted Decor (Windows, Pinboard, Sconces)
+        # 5. Doorways (Open passage thresholds, brass plates, and directional arrows)
+        for door in self.doorways:
+            d_rect = door["rect"]
+            wall = door["wall"]
+            if wall in ("left", "right"):
+                # Vertical Doorway
+                pygame.draw.rect(surface, DOOR_PASSAGE_COLOR, d_rect)
+                pygame.draw.rect(surface, DOOR_FRAME_COLOR, d_rect, 2)
+                # Door runner mat extending into floor
+                mat_x = d_rect.right if wall == "left" else d_rect.left - 24
+                mat_rect = pygame.Rect(mat_x, d_rect.y + 12, 24, d_rect.height - 24)
+                pygame.draw.rect(surface, (45, 38, 30), mat_rect)
+                pygame.draw.rect(surface, (85, 70, 50), mat_rect, 1)
+            else:
+                # Horizontal Doorway (top / bottom)
+                pygame.draw.rect(surface, DOOR_PASSAGE_COLOR, d_rect)
+                pygame.draw.rect(surface, DOOR_FRAME_COLOR, d_rect, 2)
+                mat_y = d_rect.bottom if wall == "top" else d_rect.top - 24
+                mat_rect = pygame.Rect(d_rect.x + 12, mat_y, d_rect.width - 24, 24)
+                pygame.draw.rect(surface, (45, 38, 30), mat_rect)
+                pygame.draw.rect(surface, (85, 70, 50), mat_rect, 1)
+
+        # 6. Wall Mounted Decor
         for item in self.wall_decor:
             surface.blit(item["surface"], item["rect"])
 
-        # 6. Floor Decor (Rug)
+        # 7. Floor Decor
         for item in self.floor_decor:
             surface.blit(item["surface"], item["rect"])
 
     def draw_lighting(self, surface: pygame.Surface):
-        """Draws atmospheric ambient darkness and soft lighting beams."""
-        # Subtle ambient vignette / lighting overlay
+        """Draws atmospheric lighting, warm lamp spheres, sconces, and moonbeams."""
+        lighting = self.data.get("lighting", {})
         light_surf = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
 
-        # Soft warm lamp glow around desk
-        desk_lamp_center = (420, 275)
-        for r, alpha in [(80, 20), (50, 30), (25, 45)]:
-            pygame.draw.circle(light_surf, (255, 225, 140, alpha), desk_lamp_center, r)
+        # Room-wide subtle ambient tint
+        ambient_tint = lighting.get("ambient_tint", (255, 220, 150, 18))
+        ambient_surf = pygame.Surface(self.floor_rect.size, pygame.SRCALPHA)
+        ambient_surf.fill(ambient_tint)
+        light_surf.blit(ambient_surf, self.floor_rect.topleft)
 
-        # Soft sconce glows
-        for sc in [(110, 55), (850, 55)]:
+        # Warm desk lamps
+        for lamp_pos in lighting.get("warm_lamps", []):
+            for r, alpha in [(85, 20), (55, 32), (28, 48)]:
+                pygame.draw.circle(light_surf, (255, 225, 140, alpha), lamp_pos, r)
+
+        # Wall sconces
+        for sc in lighting.get("sconces", []):
             pygame.draw.circle(light_surf, (255, 210, 120, 25), sc, 60)
             pygame.draw.circle(light_surf, (255, 230, 160, 40), sc, 30)
 
-        # Soft cool moonlight rays from windows
-        win_rays = [
-            [(170, 95), (250, 95), (290, 230), (130, 230)],
-            [(710, 95), (790, 95), (830, 230), (670, 230)],
-        ]
-        for poly in win_rays:
+        # Cool moonlight window rays
+        for poly in lighting.get("moon_rays", []):
             pygame.draw.polygon(light_surf, (160, 200, 255, 14), poly)
 
         surface.blit(light_surf, (0, 0))

@@ -18,12 +18,23 @@ from assets.svg_assets import render_svg, SVG_INTERACTION_BADGE
 
 
 class Interactable:
-    def __init__(self, obj_id: str, name: str, description: str, trigger_rect: pygame.Rect, badge_pos: tuple[int, int]):
+    def __init__(
+        self,
+        obj_id: str,
+        name: str,
+        description: str,
+        trigger_rect: pygame.Rect,
+        badge_pos: tuple[int, int],
+        is_treasure: bool = False,
+        treasure_id: str = "",
+    ):
         self.obj_id = obj_id
         self.name = name
         self.description = description
         self.trigger_rect = trigger_rect
         self.badge_pos = badge_pos
+        self.is_treasure = is_treasure
+        self.treasure_id = treasure_id
 
 
 class InteractionManager:
@@ -32,6 +43,8 @@ class InteractionManager:
         self.active_object: Interactable | None = None
         self.is_inspecting: bool = False
         self.anim_time = 0.0
+        self.trigger_puzzle_request: str | None = None
+        self.treasure_manager = None  # Injected or queried
 
         # Load badge icon surface
         self.badge_surface = render_svg(SVG_INTERACTION_BADGE, 54, 28)
@@ -42,8 +55,28 @@ class InteractionManager:
         self.body_font = pygame.font.SysFont("segoeui", 16)
         self.hint_font = pygame.font.SysFont("segoeui", 13, italic=True)
 
-    def add_object(self, obj_id: str, name: str, description: str, trigger_rect: pygame.Rect, badge_pos: tuple[int, int]):
-        self.interactables.append(Interactable(obj_id, name, description, trigger_rect, badge_pos))
+
+    def clear(self):
+        """Clears all interactables when switching rooms."""
+        self.interactables.clear()
+        self.active_object = None
+        self.is_inspecting = False
+        self.trigger_puzzle_request = None
+
+    def add_object(
+        self,
+        obj_id: str,
+        name: str,
+        description: str,
+        trigger_rect: pygame.Rect,
+        badge_pos: tuple[int, int],
+        is_treasure: bool = False,
+        treasure_id: str = "",
+    ):
+        self.interactables.append(
+            Interactable(obj_id, name, description, trigger_rect, badge_pos, is_treasure, treasure_id)
+        )
+
 
     def update(self, delta_time: float, player_reach: pygame.Rect):
         self.anim_time += delta_time
@@ -76,6 +109,12 @@ class InteractionManager:
                     self.is_inspecting = False
                     return True
                 elif self.active_object is not None:
+                    # If this is a treasure point and unsolved, request puzzle launch
+                    if self.active_object.is_treasure and self.treasure_manager is not None:
+                        t_id = self.active_object.treasure_id or self.active_object.obj_id
+                        if not self.treasure_manager.is_unlocked(t_id):
+                            self.trigger_puzzle_request = t_id
+                            return True
                     self.is_inspecting = True
                     return True
             elif event.key == pygame.K_ESCAPE and self.is_inspecting:

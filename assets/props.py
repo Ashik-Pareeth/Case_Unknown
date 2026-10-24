@@ -480,6 +480,160 @@ SVG_INTERACTION_BADGE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
 </svg>"""
 
 
+
+SVG_WALL_SAFE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 90" width="80" height="90">
+  <defs>
+    <linearGradient id="safeOuter" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3d434d"/>
+      <stop offset="50%" stop-color="#252a32"/>
+      <stop offset="100%" stop-color="#14171d"/>
+    </linearGradient>
+    <linearGradient id="safeDoor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a525f"/>
+      <stop offset="100%" stop-color="#2a303a"/>
+    </linearGradient>
+    <radialGradient id="safeDial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe8a1"/>
+      <stop offset="70%" stop-color="#c69a3b"/>
+      <stop offset="100%" stop-color="#694d12"/>
+    </radialGradient>
+  </defs>
+  <rect x="4" y="68" width="72" height="20" rx="4" fill="#000000" opacity="0.45"/>
+  <rect x="6" y="8" width="68" height="74" rx="4" fill="url(#safeOuter)" stroke="#1a1c22" stroke-width="2"/>
+  <circle cx="12" cy="14" r="2.5" fill="#c69a3b"/>
+  <circle cx="68" cy="14" r="2.5" fill="#c69a3b"/>
+  <circle cx="12" cy="76" r="2.5" fill="#c69a3b"/>
+  <circle cx="68" cy="76" r="2.5" fill="#c69a3b"/>
+  <rect x="14" y="16" width="52" height="58" rx="2" fill="url(#safeDoor)" stroke="#15181e" stroke-width="1.5"/>
+  <rect x="10" y="24" width="6" height="12" rx="1.5" fill="#c69a3b"/>
+  <rect x="10" y="52" width="6" height="12" rx="1.5" fill="#c69a3b"/>
+  <circle cx="40" cy="45" r="14" fill="#1b1e24" stroke="#c69a3b" stroke-width="2"/>
+  <circle cx="40" cy="45" r="10" fill="url(#safeDial)"/>
+  <circle cx="40" cy="45" r="4" fill="#1b1e24"/>
+  <line x1="40" y1="33" x2="40" y2="37" stroke="#dfb15b" stroke-width="2"/>
+  <rect x="48" y="43" width="12" height="4" rx="1.5" fill="#c69a3b"/>
+  <circle cx="60" cy="45" r="3.5" fill="#ffe8a1"/>
+</svg>"""
+
+SVG_AUTOPSY_TABLE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 100" width="170" height="100">
+  <defs>
+    <linearGradient id="metalTableTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b4c2ce"/>
+      <stop offset="40%" stop-color="#8ba0b2"/>
+      <stop offset="100%" stop-color="#5a6e7e"/>
+    </linearGradient>
+    <linearGradient id="metalLegs" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#465460"/>
+      <stop offset="50%" stop-color="#728594"/>
+      <stop offset="100%" stop-color="#36424c"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="85" cy="88" rx="74" ry="10" fill="#000000" opacity="0.45"/>
+  <rect x="22" y="44" width="10" height="44" rx="2" fill="url(#metalLegs)"/>
+  <rect x="138" y="44" width="10" height="44" rx="2" fill="url(#metalLegs)"/>
+  <rect x="24" y="66" width="122" height="6" fill="#36424c"/>
+  <polygon points="12,44 158,44 150,16 20,16" fill="url(#metalTableTop)" stroke="#3e4c57" stroke-width="1.5"/>
+  <line x1="12" y1="44" x2="158" y2="44" stroke="#cdd9e3" stroke-width="2"/>
+  <ellipse cx="85" cy="30" rx="55" ry="7" fill="none" stroke="#485764" stroke-width="1.5"/>
+  <circle cx="132" cy="30" r="3" fill="#20262c"/>
+  <rect x="6" y="24" width="18" height="12" rx="1.5" fill="#9db0bf" stroke="#36424c" stroke-width="1"/>
+  <line x1="9" y1="27" x2="13" y2="27" stroke="#e0e8f0" stroke-width="1"/>
+  <line x1="9" y1="30" x2="17" y2="30" stroke="#e0e8f0" stroke-width="1"/>
+  <path d="M 40,24 Q 85,20 130,24 Q 132,32 126,34 Q 85,38 44,34 Z" fill="#cfd8dc" opacity="0.85"/>
+</svg>"""
+
+SVG_PRISON_BARS = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="160" height="120">
+  <defs>
+    <linearGradient id="barSteel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2a2e33"/>
+      <stop offset="50%" stop-color="#555d66"/>
+      <stop offset="100%" stop-color="#1e2226"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="4" width="160" height="10" fill="#202428" stroke="#121518" stroke-width="1"/>
+  <rect x="0" y="106" width="160" height="10" fill="#202428" stroke="#121518" stroke-width="1"/>
+  <rect x="0" y="55" width="160" height="8" fill="#272c32" stroke="#121518" stroke-width="1"/>
+  <rect x="14" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="36" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="58" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="80" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="102" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="124" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="144" y="4" width="8" height="112" rx="1" fill="url(#barSteel)"/>
+  <rect x="74" y="52" width="20" height="20" rx="3" fill="#997a2e" stroke="#524013" stroke-width="1.5"/>
+  <circle cx="84" cy="46" r="6" fill="none" stroke="#6b7782" stroke-width="3"/>
+  <circle cx="84" cy="60" r="2" fill="#201806"/>
+</svg>"""
+
+SVG_INTERROGATION_TABLE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 110" width="160" height="110">
+  <defs>
+    <linearGradient id="intTableTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4d535e"/>
+      <stop offset="100%" stop-color="#2a2e35"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="80" cy="94" rx="70" ry="12" fill="#000000" opacity="0.45"/>
+  <rect x="12" y="48" width="16" height="38" rx="2" fill="#242830"/>
+  <polygon points="8,48 32,48 28,38 12,38" fill="#3b424d"/>
+  <rect x="132" y="48" width="16" height="38" rx="2" fill="#242830"/>
+  <polygon points="128,48 152,48 148,38 132,38" fill="#3b424d"/>
+  <rect x="42" y="52" width="8" height="42" fill="#262b32"/>
+  <rect x="110" y="52" width="8" height="42" fill="#262b32"/>
+  <polygon points="32,52 128,52 120,24 40,24" fill="url(#intTableTop)" stroke="#1a1d22" stroke-width="1.5"/>
+  <rect x="64" y="28" width="32" height="18" rx="2" fill="#1b1d20" stroke="#dfb15b" stroke-width="0.8"/>
+  <circle cx="72" cy="37" r="4" fill="#88929b"/>
+  <circle cx="88" cy="37" r="4" fill="#88929b"/>
+  <circle cx="72" cy="37" r="1.5" fill="#1a1c1e"/>
+  <circle cx="88" cy="37" r="1.5" fill="#1a1c1e"/>
+  <circle cx="92" cy="31" r="1.5" fill="#e53935"/>
+</svg>"""
+
+SVG_TREASURE_CHEST = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 64" width="74" height="64">
+  <defs>
+    <linearGradient id="chestWood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5e341a"/>
+      <stop offset="100%" stop-color="#301809"/>
+    </linearGradient>
+    <linearGradient id="chestGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffe699"/>
+      <stop offset="50%" stop-color="#dfb15b"/>
+      <stop offset="100%" stop-color="#8a6519"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="37" cy="56" rx="32" ry="7" fill="#000000" opacity="0.45"/>
+  <rect x="8" y="24" width="58" height="32" rx="3" fill="url(#chestWood)" stroke="#1f1006" stroke-width="1.5"/>
+  <path d="M 8,24 Q 37,8 66,24 Z" fill="#6d3d20" stroke="#1f1006" stroke-width="1.5"/>
+  <rect x="18" y="16" width="6" height="40" fill="url(#chestGold)"/>
+  <rect x="50" y="16" width="6" height="40" fill="url(#chestGold)"/>
+  <rect x="8" y="23" width="58" height="4" fill="url(#chestGold)"/>
+  <rect x="32" y="24" width="10" height="12" rx="2" fill="url(#chestGold)" stroke="#3e2b05" stroke-width="1"/>
+  <circle cx="37" cy="21" r="3.5" fill="none" stroke="#dfb15b" stroke-width="2"/>
+  <circle cx="37" cy="29" r="1.5" fill="#201503"/>
+  <line x1="37" y1="29" x2="37" y2="33" stroke="#201503" stroke-width="1"/>
+</svg>"""
+
+SVG_SPECIMEN_CABINET = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 110" width="74" height="110">
+  <defs>
+    <linearGradient id="specFrame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a5560"/>
+      <stop offset="100%" stop-color="#222830"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="37" cy="104" rx="32" ry="6" fill="#000000" opacity="0.4"/>
+  <rect x="6" y="8" width="62" height="96" rx="3" fill="url(#specFrame)" stroke="#15191e" stroke-width="1.5"/>
+  <rect x="12" y="14" width="50" height="38" rx="2" fill="#182c35" stroke="#354955" stroke-width="1"/>
+  <rect x="12" y="56" width="50" height="38" rx="2" fill="#182c35" stroke="#354955" stroke-width="1"/>
+  <polygon points="14,16 38,16 26,50 14,50" fill="#ffffff" opacity="0.12"/>
+  <polygon points="14,58 38,58 26,92 14,92" fill="#ffffff" opacity="0.12"/>
+  <rect x="18" y="28" width="10" height="18" rx="2" fill="#4db6ac" opacity="0.8"/>
+  <rect x="32" y="24" width="11" height="22" rx="2" fill="#ffb74d" opacity="0.8"/>
+  <rect x="47" y="30" width="9" height="16" rx="2" fill="#81c784" opacity="0.8"/>
+  <rect x="20" y="72" width="12" height="16" rx="2" fill="#e57373" opacity="0.8"/>
+  <rect x="36" y="68" width="10" height="20" rx="2" fill="#64b5f6" opacity="0.8"/>
+  <rect x="56" y="50" width="3" height="12" rx="1" fill="#dfb15b"/>
+</svg>"""
+
+
 def get_room_objects() -> dict:
     """Renders and returns all cached Pygame surfaces for the room furniture."""
     return {
@@ -493,4 +647,11 @@ def get_room_objects() -> dict:
         'plant': render_svg(SVG_POTTED_PLANT, 60, 75),
         'sconce': render_svg(SVG_WALL_SCONCE, 40, 50),
         'inspect_badge': render_svg(SVG_INTERACTION_BADGE, 54, 28),
+        'safe': render_svg(SVG_WALL_SAFE, 80, 90),
+        'autopsy_table': render_svg(SVG_AUTOPSY_TABLE, 170, 100),
+        'prison_bars': render_svg(SVG_PRISON_BARS, 160, 120),
+        'interrogation_table': render_svg(SVG_INTERROGATION_TABLE, 160, 110),
+        'treasure_chest': render_svg(SVG_TREASURE_CHEST, 74, 64),
+        'specimen_cabinet': render_svg(SVG_SPECIMEN_CABINET, 74, 110),
     }
+

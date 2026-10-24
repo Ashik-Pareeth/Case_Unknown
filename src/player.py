@@ -19,8 +19,8 @@ class Player:
         self.animations = get_character_animations()
 
         # State & Direction
-        self.direction = "down"   # "down", "up", "left", "right"
-        self.state = "idle"       # "idle", "walk"
+        self.direction = "down"  # "down", "up", "left", "right"
+        self.state = "idle"  # "idle", "walk"
         self.frame_index = 0
         self.anim_timer = 0.0
 
@@ -119,7 +119,8 @@ class Player:
                     self.update_rects()
 
     def get_interaction_reach(self) -> pygame.Rect:
-        """Returns an interaction bounding area slightly extended forward from facing direction."""
+        """Returns an interaction bounding area slightly extended forward from facing
+        direction."""
         reach = self.hitbox.inflate(36, 36)
         if self.direction == "down":
             reach.y += 12
