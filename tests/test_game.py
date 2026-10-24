@@ -109,10 +109,18 @@ def test_room_and_interaction_inspection():
     assert consumed is True
     assert interaction_mgr.is_inspecting is True
 
+    # Test dialogue drawing
+    test_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    interaction_mgr.draw_dialogue(test_surf)
+
     # Simulate pressing 'E' again to close inspection dialogue
     consumed_close = interaction_mgr.handle_event(event_e)
     assert consumed_close is True
     assert interaction_mgr.is_inspecting is False
+
+    # Test prompt drawing when active object is present
+    interaction_mgr.draw_prompt(test_surf)
+
 
 
 def test_reusable_multiple_rooms_and_doors():
