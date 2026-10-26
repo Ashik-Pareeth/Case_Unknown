@@ -52,6 +52,7 @@ class BasePuzzle:
         self.font_dial = pygame.font.SysFont("georgia", 32, bold=True)
         self.font_btn = pygame.font.SysFont("segoeui", 13, bold=True)
         self.font_hint = pygame.font.SysFont("georgia", 14, italic=True)
+        self.font_kicker = pygame.font.SysFont("segoeui", 10, bold=True)
 
         # Interactive Button Rectangles (cached for mouse clicks)
         self.btn_check_rect = pygame.Rect(self.modal_x + self.modal_w // 2 - 140, self.modal_y + self.modal_h - 68, 130, 36)
@@ -70,41 +71,32 @@ class BasePuzzle:
                 self.feedback_message = ""
 
     def draw_modal_frame(self, surface: pygame.Surface):
-        # 1. Dark backdrop dim
+        # Dimming preserves the room and makes this feel like examining an object in place.
         backdrop = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        backdrop.fill((8, 10, 14, 215))
+        backdrop.fill((6, 9, 12, 170))
         surface.blit(backdrop, (0, 0))
 
-        # 2. Main Puzzle Panel
-        panel = pygame.Surface((self.modal_w, self.modal_h), pygame.SRCALPHA)
-        panel.fill(UI_PANEL_BG)
-        surface.blit(panel, (self.modal_x, self.modal_y))
-
-        # 3. Antique Brass Border & Rivets
-        pygame.draw.rect(surface, UI_PANEL_BORDER, self.modal_rect, 2, border_radius=8)
-        inner_rect = self.modal_rect.inflate(-8, -8)
-        pygame.draw.rect(surface, (60, 52, 38), inner_rect, 1, border_radius=6)
-
-        # Brass corner rivets
-        for cx, cy in [
-            (self.modal_rect.left + 12, self.modal_rect.top + 12),
-            (self.modal_rect.right - 12, self.modal_rect.top + 12),
-            (self.modal_rect.left + 12, self.modal_rect.bottom - 12),
-            (self.modal_rect.right - 12, self.modal_rect.bottom - 12),
-        ]:
-            pygame.draw.circle(surface, UI_ACCENT_GOLD, (cx, cy), 3)
-
-        # Header Title Bar
-        title_surf = self.font_title.render(self.title, True, UI_TEXT_TITLE)
-        surface.blit(title_surf, (self.modal_x + 24, self.modal_y + 18))
-
-        sub_surf = self.font_sub.render(f"Reward: {self.reward_name}", True, UI_TEXT_MUTED)
-        surface.blit(sub_surf, (self.modal_x + 24, self.modal_y + 46))
+        shadow = pygame.Rect(self.modal_rect.x - 8, self.modal_rect.y + 9, self.modal_w + 16, self.modal_h + 16)
+        pygame.draw.rect(surface, (4, 6, 7), shadow, border_radius=11)
+        pygame.draw.rect(surface, (22, 27, 29), self.modal_rect, border_radius=8)
+        pygame.draw.rect(surface, (119, 104, 73), self.modal_rect, 1, border_radius=8)
+        pygame.draw.rect(surface, (45, 50, 49), self.modal_rect.inflate(-8, -8), 1, border_radius=6)
+        header_rect = pygame.Rect(self.modal_x + 5, self.modal_y + 5, self.modal_w - 10, 72)
+        pygame.draw.rect(surface, (30, 36, 37), header_rect, border_top_left_radius=7, border_top_right_radius=7)
+        pygame.draw.rect(surface, (177, 143, 82), (self.modal_x, self.modal_y + 12, 4, 48))
+        eyebrow = self.font_kicker.render("FIELD MECHANISM  /  CASE ACCESS", True, (148, 162, 151))
+        surface.blit(eyebrow, (self.modal_x + 24, self.modal_y + 12))
+        title_surf = self.font_title.render(self.title, True, (230, 218, 184))
+        surface.blit(title_surf, (self.modal_x + 24, self.modal_y + 31))
+        sub_surf = self.font_sub.render(self.reward_name, True, (163, 163, 145))
+        surface.blit(sub_surf, (self.modal_x + 25, self.modal_y + 55))
+        pygame.draw.line(surface, (76, 79, 70), (self.modal_x + 20, self.modal_y + 78),
+                         (self.modal_rect.right - 20, self.modal_y + 78), 1)
 
         # Close [X] Button
         mouse_pos = pygame.mouse.get_pos()
         close_hover = self.btn_close_rect.collidepoint(mouse_pos)
-        close_bg = (180, 50, 50) if close_hover else (45, 50, 60)
+        close_bg = (101, 62, 51) if close_hover else (42, 48, 47)
         pygame.draw.rect(surface, close_bg, self.btn_close_rect, border_radius=4)
         pygame.draw.rect(surface, UI_PANEL_BORDER, self.btn_close_rect, 1, border_radius=4)
         close_text = self.font_btn.render("X", True, (240, 240, 240))

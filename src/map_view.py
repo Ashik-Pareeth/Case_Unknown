@@ -124,7 +124,7 @@ class PrecinctMapView:
             pygame.draw.line(surface, (103, 157, 183), (px, py), (px, py + sy * 14), 2)
 
         # Header Title
-        title_surf = self.font_title.render("PRECINCT 13 — BLUEPRINT FLOOR PLAN", True, (215, 235, 255))
+        title_surf = self.font_title.render("CASE AREA — FIELD MAP", True, (215, 235, 255))
         surface.blit(title_surf, (self.map_x + 28, self.map_y + 18))
 
         visited_count = sum(room_id in visited_rooms for room_id in self.room_nodes)
@@ -142,6 +142,8 @@ class PrecinctMapView:
 
         # 5. Hallway Corridors
         for r1_key, r2_key in self.corridors:
+            if r1_key not in visited_rooms or r2_key not in visited_rooms:
+                continue
             r1 = self.room_nodes[r1_key]["rect"]
             r2 = self.room_nodes[r2_key]["rect"]
             c1 = r1.center
@@ -158,6 +160,8 @@ class PrecinctMapView:
             r_rect = node["rect"]
             is_current = (r_id == current_room_id)
             is_visited = (r_id in visited_rooms)
+            if not is_visited:
+                continue
 
             # Background box
             if is_current:
@@ -196,13 +200,13 @@ class PrecinctMapView:
 
             # Case-location status follows the active story's visited-room state.
             if is_current:
-                status_txt = "CURRENT LOCATION"
+                status_txt = "HERE"
                 status_col = UI_ACCENT_GOLD
             elif is_visited:
                 status_txt = "VISITED"
                 status_col = UI_SUCCESS_GREEN
             else:
-                status_txt = "UNEXPLORED"
+                status_txt = "NOT CURRENT"
                 status_col = (100, 115, 130)
 
             badge_surf = self.font_status.render(status_txt, True, status_col)
@@ -230,7 +234,7 @@ class PrecinctMapView:
         # 7. Bottom Legend
         legend_y = self.map_y + self.map_h - 32
         legend_surf = self.font_legend.render(
-            "CASE ROUTE:   Crime Scene  →  Records  →  Audio Archive  →  Restricted Office     •     [M / ESC] Close",
+            "LOCATIONS ARE ADDED AS YOU VISIT THEM     •     [M / ESC] CLOSE MAP",
             True,
             (160, 190, 220),
         )

@@ -22,16 +22,12 @@ import pygame
 from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
-    ROOM_X,
-    ROOM_Y,
     FPS,
     TITLE,
     COLOR_BG,
     UI_PANEL_BG,
     UI_PANEL_BORDER,
     UI_TEXT_TITLE,
-    UI_TEXT_MUTED,
-    UI_ACCENT_GOLD,
     FULLSCREEN,
     STATE_MENU,
     STATE_PLAYING,
@@ -71,7 +67,7 @@ def main():
     treasure_mgr = TreasureManager()
     interaction_mgr = InteractionManager(evidence_mgr)
     journal_view = JournalView(evidence_mgr)
-    menu = MenuSystem(treasure_mgr)
+    menu = MenuSystem(treasure_mgr, evidence_mgr=evidence_mgr)
     map_view = PrecinctMapView(treasure_mgr)
 
     # Initial State: Attempt to load saved progress or start in Level 1 Room 1 (directives.txt §4)
@@ -94,11 +90,6 @@ def main():
     active_treasure_id = None
     active_reveal = None
     game_state = STATE_MENU
-
-    # HUD Fonts
-    hud_font = pygame.font.SysFont("georgia", 13, bold=True)
-    hud_sub_font = pygame.font.SysFont("segoeui", 11)
-    ctrl_font = pygame.font.SysFont("segoeui", 12)
 
     running = True
 
@@ -130,6 +121,7 @@ def main():
                     evidence_mgr = EvidenceManager()
                     interaction_mgr.set_evidence_manager(evidence_mgr)
                     journal_view = JournalView(evidence_mgr)
+                    menu.evidence_mgr = evidence_mgr
                     current_room_id = "crime_scene"
                     visited_rooms = {current_room_id}
                     room = Room(
@@ -320,49 +312,6 @@ def main():
             if game_state == STATE_PLAYING:
                 interaction_mgr.draw_prompt(screen)
                 interaction_mgr.draw_dialogue(screen)
-
-            # 3.5 Minimalist Noir HUD Bar (§10)
-            hud_w = 460
-            hud_h = 32
-            hud_surf = pygame.Surface((hud_w, hud_h), pygame.SRCALPHA)
-            hud_surf.fill((16, 18, 22, 220))
-            pygame.draw.rect(hud_surf, (80, 70, 52), (0, 0, hud_w, hud_h), 1, border_radius=4)
-            screen.blit(hud_surf, (ROOM_X, ROOM_Y - 42))
-
-            # Recorded Evidence Count Indicator
-            rec_count = len(evidence_mgr.get_recorded_items())
-            sub_text = hud_sub_font.render(
-                f"[J] Case Journal ({rec_count} Recorded)",
-                True,
-                UI_ACCENT_GOLD,
-            )
-            sub_x = ROOM_X + hud_w - sub_text.get_width() - 12
-            screen.blit(sub_text, (sub_x, ROOM_Y - 36))
-
-            # Sector Title
-            max_title_w = (sub_x - (ROOM_X + 12)) - 14
-            title_str = room.name.upper()
-            if hud_font.size(title_str)[0] > max_title_w:
-                while title_str and hud_font.size(title_str + "...")[0] > max_title_w:
-                    title_str = title_str[:-1]
-                title_str += "..."
-            status_text = hud_font.render(title_str, True, (225, 195, 135))
-            screen.blit(status_text, (ROOM_X + 12, ROOM_Y - 37))
-
-            # Bottom Controls Hint Bar
-            ctrl_w = 580
-            ctrl_h = 24
-            ctrl_surf = pygame.Surface((ctrl_w, ctrl_h), pygame.SRCALPHA)
-            ctrl_surf.fill((16, 18, 22, 190))
-            pygame.draw.rect(ctrl_surf, (60, 55, 45), (0, 0, ctrl_w, ctrl_h), 1, border_radius=3)
-            screen.blit(ctrl_surf, (SCREEN_WIDTH - ctrl_w - ROOM_X, SCREEN_HEIGHT - 32))
-
-            hint_text = ctrl_font.render(
-                "[WASD] Move   [E] Examine   [J] Evidence Journal   [M] Map   [ESC] Menu   [F11] Fullscreen",
-                True,
-                UI_TEXT_MUTED,
-            )
-            screen.blit(hint_text, (SCREEN_WIDTH - ctrl_w - ROOM_X + 12, SCREEN_HEIGHT - 28))
 
             # 3.6 Modals
             if game_state == STATE_JOURNAL:

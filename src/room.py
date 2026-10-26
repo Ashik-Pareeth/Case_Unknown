@@ -76,6 +76,8 @@ class Room:
         self.color_floor_b = colors.get("floor_b", COLOR_FLOOR_B)
         self.color_floor_seam = colors.get("floor_seam", COLOR_FLOOR_SEAM)
         self.floor_style = self.data.get("floor_style", "parquet")
+        self._background_cache = None
+        self._lighting_cache = None
 
         # Load SVG assets
         self.assets = get_room_objects()
@@ -294,14 +296,34 @@ class Room:
         return None
 
     def draw_background(self, surface: pygame.Surface):
+        """Draw the room's static architecture from a cached surface."""
+        if self._background_cache is None or self._background_cache.get_size() != surface.get_size():
+            self._background_cache = pygame.Surface(surface.get_size())
+            self._background_cache.fill((12, 14, 18))
+            self._render_static_background(self._background_cache)
+        surface.blit(self._background_cache, (0, 0))
+
+    def _render_static_background(self, surface: pygame.Surface):
         """Draws room walls, custom flooring, baseboards, and wall decor."""
-        # 1. Outer room shell and top wall
+        # 1. Deep cast shadow and architectural shell
+        pygame.draw.rect(surface, (5, 7, 9), self.rect.move(0, 9).inflate(14, 14), border_radius=5)
         pygame.draw.rect(surface, self.color_wall, self.rect)
         pygame.draw.rect(
             surface,
             self.color_wall_top,
             (self.rect.left, self.rect.top, self.rect.width, self.top_wall_height),
         )
+        # Wall plaster bands catch a little light at the picture rail and base.
+        wall_lip = tuple(min(255, c + 12) for c in self.color_wall_top)
+        wall_shade = tuple(max(0, c - 10) for c in self.color_wall_top)
+        pygame.draw.line(surface, wall_lip, (self.rect.left, self.rect.top + 7),
+                         (self.rect.right, self.rect.top + 7), 2)
+        pygame.draw.line(surface, wall_shade,
+                         (self.rect.left + 2, self.rect.top + self.top_wall_height - 14),
+                         (self.rect.right - 2, self.rect.top + self.top_wall_height - 14), 2)
+        pygame.draw.line(surface, tuple(min(255, c + 5) for c in self.color_wall),
+                         (self.rect.left + 5, self.rect.top + self.top_wall_height + 2),
+                         (self.rect.right - 5, self.rect.top + self.top_wall_height + 2), 1)
 
         # 2. Floor Generation by Style
         pygame.draw.rect(surface, self.color_floor_a, self.floor_rect)
@@ -320,6 +342,11 @@ class Room:
                         color = self.color_floor_a if (row + (x // plank_w)) % 2 == 0 else self.color_floor_b
                         pygame.draw.rect(surface, color, p_rect)
                         pygame.draw.rect(surface, self.color_floor_seam, p_rect, 1)
+                        if (row + x // plank_w) % 3 == 0:
+                            grain = tuple(min(255, c + 4) for c in color)
+                            gy = p_rect.top + 7
+                            pygame.draw.line(surface, grain, (p_rect.left + 18, gy),
+                                             (p_rect.right - 24, gy), 1)
 
         elif self.floor_style == "tiles":
             # Ceramic / clinical square tile pattern
@@ -371,11 +398,8 @@ class Room:
         pygame.draw.line(surface, tuple(min(255, c + 15) for c in self.color_wall_top),
                          (self.rect.left, panel_bottom + 5), (self.rect.right, panel_bottom + 5), 2)
 
-        # Floor inset perimeter and subtle perspective guide seams.
+        # Floor border and subtle reflection line at the edge of the room.
         pygame.draw.rect(surface, tuple(min(255, c + 12) for c in self.color_floor_a), self.floor_rect, 1)
-        for inset in (12, 24):
-            guide = self.floor_rect.inflate(-inset * 2, -inset * 2)
-            pygame.draw.rect(surface, self.color_floor_seam, guide, 1)
 
         # 3. Baseboard trim
         pygame.draw.rect(
@@ -412,12 +436,6 @@ class Room:
                 pygame.draw.rect(surface, (85, 70, 50), mat_rect, 1)
 
         # 6. Wall Mounted Decor
-        plaque_text = self.door_font.render(self.name.upper(), True, (205, 177, 121))
-        plaque = pygame.Rect(self.rect.centerx - max(54, plaque_text.get_width() // 2 + 14),
-                             self.rect.top + 5, max(108, plaque_text.get_width() + 28), 18)
-        pygame.draw.rect(surface, (27, 30, 34), plaque, border_radius=3)
-        pygame.draw.rect(surface, (99, 79, 49), plaque, 1, border_radius=3)
-        surface.blit(plaque_text, plaque_text.get_rect(center=plaque.center))
         for item in self.wall_decor:
             surface.blit(item["surface"], item["rect"])
 
@@ -426,9 +444,14 @@ class Room:
             surface.blit(item["surface"], item["rect"])
 
     def draw_lighting(self, surface: pygame.Surface):
-        """Draws atmospheric lighting, warm lamp spheres, sconces, and moonbeams."""
+        """Composite the room's soft, cached light pools over its moving characters."""
+        if self._lighting_cache is None or self._lighting_cache.get_size() != surface.get_size():
+            self._lighting_cache = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+            self._render_lighting(self._lighting_cache)
+        surface.blit(self._lighting_cache, (0, 0))
+
+    def _render_lighting(self, light_surf: pygame.Surface):
         lighting = self.data.get("lighting", {})
-        light_surf = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
 
         # Room-wide subtle ambient tint
         ambient_tint = lighting.get("ambient_tint", (255, 220, 150, 18))
@@ -436,18 +459,26 @@ class Room:
         ambient_surf.fill(ambient_tint)
         light_surf.blit(ambient_surf, self.floor_rect.topleft)
 
-        # Warm desk lamps
+        def soft_pool(center, radius, tint, peak_alpha):
+            # Draw each light separately and alpha-composite it over the room tone.
+            # Drawing straight onto the cache overwrites stronger ambient pixels at
+            # the pool edge, which reads as an artificial dark halo.
+            pool = pygame.Surface(light_surf.get_size(), pygame.SRCALPHA)
+            for r in range(radius, 0, -3):
+                t = 1.0 - r / radius
+                alpha = int(peak_alpha * t * t)
+                if alpha:
+                    pygame.draw.circle(pool, (*tint, alpha), center, r)
+            light_surf.blit(pool, (0, 0))
+
+        # Feathered pools avoid the hard-edged spotlight rings of the old scene.
         for lamp_pos in lighting.get("warm_lamps", []):
-            for r, alpha in [(85, 20), (55, 32), (28, 48)]:
-                pygame.draw.circle(light_surf, (255, 225, 140, alpha), lamp_pos, r)
+            soft_pool(lamp_pos, 160, (255, 218, 155), 10)
 
-        # Wall sconces
+        # Small warm spill from wall fittings
         for sc in lighting.get("sconces", []):
-            pygame.draw.circle(light_surf, (255, 210, 120, 25), sc, 60)
-            pygame.draw.circle(light_surf, (255, 230, 160, 40), sc, 30)
+            soft_pool(sc, 86, (255, 215, 145), 7)
 
-        # Cool moonlight window rays
+        # Cool, broad window shafts retain enough contrast for navigation.
         for poly in lighting.get("moon_rays", []):
-            pygame.draw.polygon(light_surf, (160, 200, 255, 14), poly)
-
-        surface.blit(light_surf, (0, 0))
+            pygame.draw.polygon(light_surf, (160, 200, 255, 12), poly)

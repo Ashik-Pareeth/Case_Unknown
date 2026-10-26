@@ -180,7 +180,9 @@ ROOMS_DATA = {
             {"prop": "sconce", "pos": (120, 35)},
             {"prop": "sconce", "pos": (840, 35)},
         ],
-        "floor_decor": [],
+        "floor_decor": [
+            {"prop": "wastebasket", "pos": (760, 386)},
+        ],
         "furniture": [
             {
                 "prop": "filing_cabinet",
@@ -511,15 +513,18 @@ ROOMS_DATA = {
         ],
         "wall_decor": [
             {"prop": "window", "pos": (170, 16)},
+            {"prop": "evidence_board", "pos": (395, 20)},
             {"prop": "sconce", "pos": (90, 35)},
             {"prop": "sconce", "pos": (830, 35)},
         ],
         "floor_decor": [
             {"prop": "rug", "pos": (370, 240)},
+            {"prop": "evidence_marker", "pos": (312, 362)},
+            {"prop": "wastebasket", "pos": (574, 383)},
         ],
         "furniture": [
             {
-                "prop": "desk",
+                "prop": "crime_desk",
                 "pos": (390, 245),
                 "hitbox": (398, 290, 164, 65),
                 "id": "hale_desk",
@@ -534,6 +539,15 @@ ROOMS_DATA = {
                     "Status: Time of death estimated at 21:40. Office window latched from inside.\n"
                     "Note: Hale's personal diary is missing, but desk drawers remain locked."
                 ),
+            },
+            {
+                "prop": "chair",
+                "pos": (468, 316),
+                "hitbox": (486, 369, 48, 22),
+                "id": "pulled_back_chair",
+                "name": "Hale's Desk Chair",
+                "description": "The chair sits several inches out from the desk, its angle inconsistent with someone who simply stood up.",
+                "obj_type": "examinable",
             },
             {
                 "prop": "bookshelf",
@@ -630,7 +644,9 @@ ROOMS_DATA = {
             {"prop": "sconce", "pos": (470, 35)},
             {"prop": "evidence_board", "pos": (395, 20)},
         ],
-        "floor_decor": [],
+        "floor_decor": [
+            {"prop": "wastebasket", "pos": (760, 386)},
+        ],
         "furniture": [
             {
                 "prop": "filing_cabinet",
@@ -649,7 +665,7 @@ ROOMS_DATA = {
                 ),
             },
             {
-                "prop": "desk",
+                "prop": "records_table",
                 "pos": (580, 260),
                 "hitbox": (588, 305, 164, 65),
                 "id": "clerk_table",
@@ -709,13 +725,16 @@ ROOMS_DATA = {
         "wall_decor": [
             {"prop": "sconce", "pos": (90, 35)},
             {"prop": "sconce", "pos": (830, 35)},
+            {"prop": "acoustic_panel", "pos": (130, 68)},
+            {"prop": "acoustic_panel", "pos": (735, 68)},
         ],
         "floor_decor": [
             {"prop": "rug", "pos": (360, 240)},
+            {"prop": "wastebasket", "pos": (594, 369)},
         ],
         "furniture": [
             {
-                "prop": "desk",
+                "prop": "audio_console",
                 "pos": (390, 245),
                 "hitbox": (398, 290, 164, 65),
                 "id": "audio_console",
@@ -729,6 +748,15 @@ ROOMS_DATA = {
                     "They are burying the personnel rosters. Adrian Voss signed the transfer order himself...\n"
                     "Nora tried to warn them. The town... they never even knew what was tested...'"
                 ),
+            },
+            {
+                "prop": "chair",
+                "pos": (468, 316),
+                "hitbox": (486, 369, 48, 22),
+                "id": "recorder_chair",
+                "name": "Playback Chair",
+                "description": "A chair with one arm polished smooth from repeated use at the reel recorder.",
+                "obj_type": "examinable",
             },
             {
                 "prop": "bookshelf",
@@ -751,14 +779,14 @@ ROOMS_DATA = {
         "floor_style": "parquet",
         "colors": {
             "wall": (35, 38, 45),
-            "wall_top": (48, 52, 62),
+            "wall_top": (43, 50, 57),
             "wall_base": (25, 28, 34),
-            "floor_a": (38, 30, 24),
-            "floor_b": (32, 24, 18),
-            "floor_seam": (20, 16, 12),
+            "floor_a": (34, 36, 38),
+            "floor_b": (29, 31, 33),
+            "floor_seam": (19, 21, 23),
         },
         "lighting": {
-            "ambient_tint": (255, 205, 120, 20),
+            "ambient_tint": (218, 230, 242, 10),
             "warm_lamps": [(460, 260)],
             "sconces": [(110, 55), (850, 55)],
             "moon_rays": [
@@ -775,15 +803,14 @@ ROOMS_DATA = {
         ],
         "wall_decor": [
             {"prop": "window", "pos": (710, 16)},
+            {"prop": "directorate_seal", "pos": (392, 24)},
             {"prop": "sconce", "pos": (90, 35)},
             {"prop": "sconce", "pos": (830, 35)},
         ],
-        "floor_decor": [
-            {"prop": "rug", "pos": (370, 230)},
-        ],
+        "floor_decor": [],
         "furniture": [
             {
-                "prop": "desk",
+                "prop": "executive_desk",
                 "pos": (390, 235),
                 "hitbox": (398, 280, 164, 65),
                 "id": "voss_desk",
@@ -798,6 +825,15 @@ ROOMS_DATA = {
                     "Mandate: No personnel outside Class-4 clearance may review Hale's historical files.\n"
                     "Signature verified: Adrian Voss."
                 ),
+            },
+            {
+                "prop": "chair",
+                "pos": (468, 306),
+                "hitbox": (486, 359, 48, 22),
+                "id": "voss_chair",
+                "name": "Director's Chair",
+                "description": "A high-backed chair kept square to the desk, with no personal effects left on it.",
+                "obj_type": "examinable",
             },
             {
                 "prop": "safe",

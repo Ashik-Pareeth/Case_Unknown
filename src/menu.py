@@ -24,16 +24,17 @@ from src.settings import (
 )
 from typing import Optional
 from src.treasure import TreasureManager
-from src.experience import ExperienceManager
+from src.experience import ExperienceManager  # accepted for compatibility with older callers
 from assets.svg_assets import get_character_animations
 
 
 class MenuSystem:
     """Manages the title screen, in-game pause menu, and dossier sub-screens."""
 
-    def __init__(self, treasure_mgr: TreasureManager, exp_mgr: Optional[ExperienceManager] = None):
+    def __init__(self, treasure_mgr: TreasureManager, exp_mgr: Optional[ExperienceManager] = None, evidence_mgr=None):
         self.treasure_mgr = treasure_mgr
         self.exp_mgr = exp_mgr
+        self.evidence_mgr = evidence_mgr
         self.current_screen = "MAIN"  # "MAIN", "EVIDENCE", "CONTROLS"
         self.selected_idx = 0
         self.anim_time = 0.0
@@ -52,11 +53,11 @@ class MenuSystem:
         # Main Menu Options
         self.menu_options = [
             {"id": "RESUME", "label": "RESUME INVESTIGATION"},
-            {"id": "NEW_GAME", "label": "NEW CASE FILE"},
-            {"id": "MAP", "label": "PRECINCT BLUEPRINT MAP [M]"},
-            {"id": "EVIDENCE", "label": "CASE EVIDENCE DOSSIER"},
-            {"id": "CONTROLS", "label": "INVESTIGATION CONTROLS"},
-            {"id": "QUIT", "label": "EXIT GAME"},
+            {"id": "NEW_GAME", "label": "OPEN CASE FILE"},
+            {"id": "MAP", "label": "FIELD MAP  [M]"},
+            {"id": "EVIDENCE", "label": "INVESTIGATION JOURNAL  [J]"},
+            {"id": "CONTROLS", "label": "FIELD GUIDE & CONTROLS"},
+            {"id": "QUIT", "label": "LEAVE PRECINCT"},
         ]
 
         # Button Rectangles
@@ -146,15 +147,25 @@ class MenuSystem:
         for y in range(0, SCREEN_HEIGHT, 48):
             pygame.draw.line(surface, (13, 17, 23), (0, y), (SCREEN_WIDTH, y), 1)
         glow = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        for radius, alpha in ((230, 7), (165, 10), (95, 14)):
-            pygame.draw.circle(glow, (224, 174, 83, alpha), (SCREEN_WIDTH - 145, 215), radius)
+        for radius in range(230, 0, -5):
+            strength = 1 - radius / 230
+            alpha = int(10 * strength * strength)
+            if alpha:
+                pygame.draw.circle(glow, (224, 174, 83, alpha), (SCREEN_WIDTH - 145, 215), radius)
         surface.blit(glow, (0, 0))
 
         # Rain-lit window and warm desk silhouette frame the title without competing with it.
         pygame.draw.rect(surface, (18, 27, 37), (58, 54, 210, 142), border_radius=4)
+        for bx, bw, bh in ((68, 24, 33), (96, 33, 52), (136, 26, 40), (170, 35, 63), (212, 41, 46)):
+            pygame.draw.rect(surface, (18, 25, 31), (bx, 194 - bh, bw, bh))
+            for wy in range(194 - bh + 8, 190, 12):
+                for wx in range(bx + 5, bx + bw - 3, 9):
+                    pygame.draw.rect(surface, (125, 122, 93), (wx, wy, 2, 3))
         pygame.draw.rect(surface, (93, 126, 145), (58, 54, 210, 142), 2, border_radius=4)
-        for x in range(72, 260, 22):
-            pygame.draw.line(surface, (50, 78, 94), (x, 60), (x - 34, 190), 1)
+        for x, y in ((76, 68), (105, 60), (139, 72), (182, 58), (225, 68), (250, 73),
+                     (89, 112), (125, 101), (155, 121), (202, 108), (237, 132)):
+            pygame.draw.line(surface, (62, 91, 104), (x, y), (x - 12, y + 41), 1)
+            pygame.draw.line(surface, (42, 67, 78), (x - 12, y + 41), (x - 15, y + 49), 1)
         pygame.draw.line(surface, (93, 126, 145), (163, 57), (163, 193), 3)
         pygame.draw.line(surface, (93, 126, 145), (61, 124), (265, 124), 3)
         pygame.draw.rect(surface, (47, 32, 24), (0, 540, SCREEN_WIDTH, 100))
@@ -240,19 +251,11 @@ class MenuSystem:
             surface.blit(btn_txt, btn_txt.get_rect(center=rect.center))
 
         # Bottom status
-        prog = self.treasure_mgr.get_progress_percentage()
-        unlocked_count = len(self.treasure_mgr.get_all_unlocked())
-        total_count = len(self.treasure_mgr.treasures)
-
-        if self.exp_mgr:
-            lvl, rank_name = self.exp_mgr.level_and_rank
-            status_line = (
-                f"Rank: LVL {lvl} {rank_name}  •  Evidence: {unlocked_count}/{total_count} ({prog}% Complete)  •  EXP: {self.exp_mgr.total_exp}"
-            )
+        if not has_active_game:
+            status_line = "NEW CASE FILE  /  THE SILENT WITNESS"
         else:
-            status_line = (
-                f"Case Investigation Status: {unlocked_count}/{total_count} Evidence Items Recovered ({prog}% Complete)"
-            )
+            count = len(self.evidence_mgr.get_recorded_items()) if self.evidence_mgr else 0
+            status_line = f"CASE FILE 001  /  {count} EVIDENCE ITEMS RECORDED"
 
         footer_txt = self.font_card_sub.render(status_line, True, UI_TEXT_MUTED)
         surface.blit(footer_txt, ((SCREEN_WIDTH - footer_txt.get_width()) // 2, SCREEN_HEIGHT - 35))
@@ -271,16 +274,6 @@ class MenuSystem:
         # Header Title
         d_title = self.font_card_title.render("CASE EVIDENCE DOSSIER — CONFIDENTIAL RECOVERIES", True, UI_TEXT_TITLE)
         surface.blit(d_title, (box_x + 20, box_y + 14))
-
-        # Detective Rank Credential (Header Right)
-        if self.exp_mgr:
-            lvl, rank_name = self.exp_mgr.level_and_rank
-            rank_txt = self.font_card_sub.render(
-                f"DETECTIVE: LVL {lvl} {rank_name.upper()}  |  {self.exp_mgr.total_exp} EXP",
-                True,
-                UI_ACCENT_GOLD,
-            )
-            surface.blit(rank_txt, (box_x + box_w - rank_txt.get_width() - 20, box_y + 16))
 
         # List all 5 treasures
         items = list(self.treasure_mgr.treasures.values())

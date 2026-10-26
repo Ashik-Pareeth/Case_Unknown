@@ -355,30 +355,34 @@ class EvidenceManager:
             alpha = int((toast.timer / 0.4) * 255)
         alpha = max(0, min(255, alpha))
 
-        w, h = 380, 56
+        w, h = 350, 58
         x = (SCREEN_WIDTH - w) // 2
-        y = 20
+        y = 18
 
         toast_surf = pygame.Surface((w, h), pygame.SRCALPHA)
         # Background
         toast_surf.fill((*UI_PANEL_BG[:3], int(alpha * 0.94)))
         # Border
-        pygame.draw.rect(toast_surf, (*UI_PANEL_BORDER, alpha), (0, 0, w, h), width=2, border_radius=4)
-        # Accent left stripe
-        pygame.draw.rect(toast_surf, (*UI_ACCENT_GOLD, alpha), (0, 0, 6, h), border_top_left_radius=4, border_bottom_left_radius=4)
+        pygame.draw.rect(toast_surf, (112, 112, 94, alpha), (0, 0, w, h), width=1, border_radius=5)
+        pygame.draw.rect(toast_surf, (165, 137, 86, alpha), (0, 0, 3, h), border_top_left_radius=5, border_bottom_left_radius=5)
+        pygame.draw.rect(toast_surf, (66, 75, 66, alpha), (13, 15, 24, 29), border_radius=2)
+        pygame.draw.rect(toast_surf, (147, 157, 137, alpha), (13, 15, 24, 29), width=1, border_radius=2)
+        pygame.draw.line(toast_surf, (147, 157, 137, alpha), (19, 22), (31, 22), 1)
+        pygame.draw.line(toast_surf, (147, 157, 137, alpha), (19, 28), (31, 28), 1)
+        pygame.draw.line(toast_surf, (147, 157, 137, alpha), (19, 34), (28, 34), 1)
 
         # Title
-        title_surf = self.font_title.render(toast.title, True, UI_ACCENT_GOLD)
+        title_surf = self.font_title.render(toast.title, True, (213, 194, 150))
         title_surf.set_alpha(alpha)
-        toast_surf.blit(title_surf, (18, 10))
+        toast_surf.blit(title_surf, (48, 8))
 
         # Subtitle
         sub_text = toast.subtitle
         if len(sub_text) > 46:
             sub_text = sub_text[:43] + "..."
-        sub_surf = self.font_sub.render(sub_text, True, UI_TEXT_BODY)
+        sub_surf = self.font_sub.render(sub_text, True, (184, 190, 179))
         sub_surf.set_alpha(alpha)
-        toast_surf.blit(sub_surf, (18, 30))
+        sub_surf.blit(sub_surf, (48, 31))
 
         surface.blit(toast_surf, (x, y))
 

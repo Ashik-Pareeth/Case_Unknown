@@ -106,13 +106,13 @@ SVG_DETECTIVE_DESK = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18
 SVG_LEATHER_SOFA = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 100" width="170" height="100">
   <defs>
     <linearGradient id="sofaLeather" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#6e282c"/>
-      <stop offset="50%" stop-color="#4f1b1e"/>
-      <stop offset="100%" stop-color="#351114"/>
+      <stop offset="0%" stop-color="#596052"/>
+      <stop offset="50%" stop-color="#3f463c"/>
+      <stop offset="100%" stop-color="#292e29"/>
     </linearGradient>
     <linearGradient id="sofaCushion" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5c2024"/>
-      <stop offset="100%" stop-color="#3d1416"/>
+      <stop offset="0%" stop-color="#4a5245"/>
+      <stop offset="100%" stop-color="#30362f"/>
     </linearGradient>
   </defs>
 
@@ -129,29 +129,29 @@ SVG_LEATHER_SOFA = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 1
   <rect x="16" y="18" width="138" height="42" rx="10" fill="url(#sofaLeather)"/>
   
   <!-- Diamond Tufting Buttons & Creases -->
-  <g fill="#240c0e" opacity="0.8">
+  <g fill="#202620" opacity="0.8">
     <circle cx="36" cy="30" r="2.2"/><circle cx="58" cy="30" r="2.2"/>
     <circle cx="85" cy="30" r="2.2"/><circle cx="112" cy="30" r="2.2"/><circle cx="134" cy="30" r="2.2"/>
     <circle cx="47" cy="42" r="2.2"/><circle cx="71" cy="42" r="2.2"/>
     <circle cx="99" cy="42" r="2.2"/><circle cx="123" cy="42" r="2.2"/>
   </g>
   <path d="M36,30 L47,42 L58,30 L71,42 L85,30 L99,42 L112,30 L123,42 L134,30" 
-        stroke="#240c0e" stroke-width="1.2" fill="none" opacity="0.6"/>
+        stroke="#202620" stroke-width="1.2" fill="none" opacity="0.6"/>
 
   <!-- Main Seat Base & Brass Tack Line -->
-  <rect x="14" y="60" width="142" height="18" rx="4" fill="#3d1416"/>
+  <rect x="14" y="60" width="142" height="18" rx="4" fill="#30362f"/>
   <!-- Brass nailhead trim -->
-  <line x1="20" y1="74" x2="150" y2="74" stroke="#dfb15b" stroke-width="1.5" stroke-dasharray="2,3"/>
+  <line x1="20" y1="74" x2="150" y2="74" stroke="#a58d62" stroke-width="1.2" stroke-dasharray="2,3"/>
 
   <!-- Left Rolled Armrest -->
   <ellipse cx="20" cy="52" rx="12" ry="18" fill="url(#sofaLeather)"/>
-  <ellipse cx="20" cy="52" rx="9" ry="14" fill="#6e282c"/>
-  <circle cx="20" cy="52" r="3" fill="#dfb15b"/>
+  <ellipse cx="20" cy="52" rx="9" ry="14" fill="#596052"/>
+  <circle cx="20" cy="52" r="3" fill="#a58d62"/>
 
   <!-- Right Rolled Armrest -->
   <ellipse cx="150" cy="52" rx="12" ry="18" fill="url(#sofaLeather)"/>
-  <ellipse cx="150" cy="52" rx="9" ry="14" fill="#6e282c"/>
-  <circle cx="150" cy="52" r="3" fill="#dfb15b"/>
+  <ellipse cx="150" cy="52" rx="9" ry="14" fill="#596052"/>
+  <circle cx="150" cy="52" r="3" fill="#a58d62"/>
 
   <!-- Plump Seat Cushions (3 cushions) -->
   <rect x="30" y="48" width="34" height="20" rx="4" fill="url(#sofaCushion)" stroke="#2b0d0f" stroke-width="1.2"/>
@@ -362,8 +362,8 @@ SVG_NOIR_WINDOW = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 110
 SVG_VINTAGE_RUG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 130" width="220" height="130">
   <defs>
     <linearGradient id="rugBase" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#5c1920"/>
-      <stop offset="100%" stop-color="#421217"/>
+      <stop offset="0%" stop-color="#41423b"/>
+      <stop offset="100%" stop-color="#2d302c"/>
     </linearGradient>
   </defs>
 
@@ -375,23 +375,23 @@ SVG_VINTAGE_RUG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 13
   <rect x="6" y="10" width="208" height="110" rx="3" fill="url(#rugBase)"/>
 
   <!-- Outer Navy Border -->
-  <rect x="12" y="16" width="196" height="98" rx="2" fill="none" stroke="#1c2838" stroke-width="7"/>
+  <rect x="12" y="16" width="196" height="98" rx="2" fill="none" stroke="#293136" stroke-width="7"/>
   <!-- Gold Accent Trim -->
-  <rect x="16" y="20" width="188" height="90" fill="none" stroke="#cca458" stroke-width="1.5"/>
+  <rect x="16" y="20" width="188" height="90" fill="none" stroke="#a58d62" stroke-width="1.5"/>
 
   <!-- Inner Field Background -->
-  <rect x="22" y="26" width="176" height="78" fill="#50161c"/>
+  <rect x="22" y="26" width="176" height="78" fill="#323630"/>
 
   <!-- Central Persian Medallion -->
-  <polygon points="110,32 150,65 110,98 70,65" fill="#1c2838" stroke="#cca458" stroke-width="2"/>
-  <circle cx="110" cy="65" r="16" fill="#751f28" stroke="#cca458" stroke-width="1.5"/>
-  <circle cx="110" cy="65" r="7" fill="#cca458"/>
+  <polygon points="110,32 150,65 110,98 70,65" fill="#293136" stroke="#a58d62" stroke-width="2"/>
+  <circle cx="110" cy="65" r="16" fill="#454a40" stroke="#a58d62" stroke-width="1.5"/>
+  <circle cx="110" cy="65" r="7" fill="#a58d62"/>
 
   <!-- Corner Quarter-Medallions -->
-  <polygon points="22,26 44,26 22,48" fill="#1c2838" stroke="#cca458" stroke-width="1"/>
-  <polygon points="198,26 176,26 198,48" fill="#1c2838" stroke="#cca458" stroke-width="1"/>
-  <polygon points="22,104 44,104 22,82" fill="#1c2838" stroke="#cca458" stroke-width="1"/>
-  <polygon points="198,104 176,104 198,82" fill="#1c2838" stroke="#cca458" stroke-width="1"/>
+  <polygon points="22,26 44,26 22,48" fill="#293136" stroke="#a58d62" stroke-width="1"/>
+  <polygon points="198,26 176,26 198,48" fill="#293136" stroke="#a58d62" stroke-width="1"/>
+  <polygon points="22,104 44,104 22,82" fill="#293136" stroke="#a58d62" stroke-width="1"/>
+  <polygon points="198,104 176,104 198,82" fill="#293136" stroke="#a58d62" stroke-width="1"/>
 </svg>"""
 
 
@@ -633,6 +633,100 @@ SVG_SPECIMEN_CABINET = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7
   <rect x="56" y="50" width="3" height="12" rx="1" fill="#dfb15b"/>
 </svg>"""
 
+# ---------------------------------------------------------------------------
+# Case-specific environmental storytelling props
+# ---------------------------------------------------------------------------
+
+SVG_CRIME_DESK = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 130" width="190" height="130">
+<defs>
+  <linearGradient id="cdwood" x2="0" y2="1"><stop stop-color="#62432f"/><stop offset="1" stop-color="#30231d"/></linearGradient>
+  <linearGradient id="cdtop" x2="0" y2="1"><stop stop-color="#77563c"/><stop offset="1" stop-color="#493224"/></linearGradient>
+</defs>
+<ellipse cx="95" cy="116" rx="82" ry="9" fill="#07090b" opacity=".48"/>
+<path d="M22 69h146v40H22z" fill="url(#cdwood)" stroke="#201712" stroke-width="2"/>
+<path d="M31 78h42v27H31zm86 0h42v27h-42z" fill="#38261d" stroke="#876447" stroke-width="1"/>
+<path d="M36 86h31m-31 9h31m55-9h31m-31 9h31" stroke="#241b17" stroke-width="2"/>
+<path d="M12 66 23 27h144l11 39-9 8H20z" fill="url(#cdtop)" stroke="#211712" stroke-width="2"/>
+<path d="m23 29 144 0M17 66h156" stroke="#a47a51" stroke-width="2" opacity=".78"/>
+<path d="m47 55 34-3-4-21-34 4z" fill="#d9c9a6" stroke="#796d5a"/>
+<path d="m51 40 20-2m-19 7 19-2m-18 7 12-1" stroke="#95866e" stroke-width="1"/>
+<path d="m72 51 30-2-2-24-31 2z" fill="#d1bd91" stroke="#74654d"/>
+<path d="m77 34 18-1m-17 6 17-1m-16 6 11-1" stroke="#9a8767" stroke-width="1"/>
+<path d="m104 24 11 0 5 27-11 2z" fill="#282522" stroke="#aaa08c" stroke-width="1"/>
+<circle cx="110" cy="36" r="4" fill="#baab8f"/><circle cx="110" cy="36" r="1.2" fill="#201e1b"/>
+<path d="M145 43q8 0 8 6v7h-17v-7q0-6 9-6z" fill="#34302c" stroke="#a99172"/>
+<path d="M140 44v-2a5 5 0 0 1 10 0v2" fill="none" stroke="#c0a77c" stroke-width="1.5"/>
+<path d="m81 66 6-5 6 5" fill="none" stroke="#ad7557" stroke-width="2" opacity=".9"/>
+</svg>"""
+
+SVG_RECORDS_TABLE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 116" width="180" height="116">
+<defs><linearGradient id="rtsteel" x2="0" y2="1"><stop stop-color="#686964"/><stop offset="1" stop-color="#363936"/></linearGradient></defs>
+<ellipse cx="90" cy="105" rx="77" ry="8" fill="#090b0d" opacity=".42"/>
+<path d="M25 56h12v45H25zm118 0h12v45h-12z" fill="#303432"/><path d="m19 55 8-25h126l8 25-8 8H27z" fill="url(#rtsteel)" stroke="#232725" stroke-width="2"/>
+<path d="m37 48 44-4-2-22-43 4z" fill="#d5c9aa" stroke="#7f7562"/><path d="m45 33 24-2m-23 8 29-2" stroke="#988c76"/>
+<path d="m89 45 37-3-3-28-38 3z" fill="#b89c70" stroke="#695843"/><path d="m96 25 21-2m-20 8 19-2" stroke="#766449"/>
+<circle cx="139" cy="38" r="9" fill="#555a55" stroke="#b19a70"/><circle cx="139" cy="38" r="5" fill="#252b2a"/><path d="M139 38 142 33" stroke="#ddd0ae"/>
+<path d="M49 62h81v5H49z" fill="#afb3ab" opacity=".45"/>
+</svg>"""
+
+SVG_AUDIO_CONSOLE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 132" width="190" height="132">
+<defs><linearGradient id="acwood" x2="0" y2="1"><stop stop-color="#51463b"/><stop offset="1" stop-color="#292725"/></linearGradient><linearGradient id="acmetal" x2="0" y2="1"><stop stop-color="#aaa99b"/><stop offset="1" stop-color="#555a59"/></linearGradient></defs>
+<ellipse cx="95" cy="119" rx="82" ry="9" fill="#06080a" opacity=".48"/>
+<path d="M26 66h138v43H26z" fill="url(#acwood)" stroke="#211e1b" stroke-width="2"/><path d="M34 74h122v29H34z" fill="#292522" stroke="#70604b"/>
+<path d="m14 65 12-40h138l12 40-10 8H24z" fill="#49443d" stroke="#1e1c19" stroke-width="2"/><path d="m24 63 142 0" stroke="#b09c77" stroke-width="2"/>
+<rect x="45" y="29" width="100" height="30" rx="3" fill="#252a29" stroke="#aaa28f" stroke-width="2"/>
+<circle cx="70" cy="43" r="12" fill="url(#acmetal)" stroke="#201f1c" stroke-width="2"/><circle cx="70" cy="43" r="7" fill="#252a2a"/><circle cx="70" cy="43" r="2" fill="#b8b9af"/>
+<circle cx="119" cy="43" r="12" fill="url(#acmetal)" stroke="#201f1c" stroke-width="2"/><circle cx="119" cy="43" r="7" fill="#252a2a"/><circle cx="119" cy="43" r="2" fill="#b8b9af"/>
+<path d="M82 38h25v10H82z" fill="#111614" stroke="#65716c"/><path d="m86 43 16-2" stroke="#c3ab73" stroke-width="1.5"/>
+<circle cx="53" cy="58" r="2" fill="#d77b62"/><circle cx="61" cy="58" r="2" fill="#c7b67e"/><path d="M77 66q18 12 36 0" fill="none" stroke="#b4a17e" stroke-width="1.4"/>
+<path d="M45 83h38m-38 5h30" stroke="#9a8a70" stroke-width="1" opacity=".65"/>
+<path d="M140 80v14m-4-7h8" stroke="#a78955" stroke-width="2"/>
+</svg>"""
+
+SVG_EXECUTIVE_DESK = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 128" width="190" height="128">
+<defs><linearGradient id="edwood" x2="0" y2="1"><stop stop-color="#443b34"/><stop offset="1" stop-color="#211f1d"/></linearGradient><linearGradient id="edtop" x2="0" y2="1"><stop stop-color="#675746"/><stop offset="1" stop-color="#3b332c"/></linearGradient></defs>
+<ellipse cx="95" cy="115" rx="84" ry="9" fill="#050607" opacity=".5"/><path d="M22 66h146v43H22z" fill="url(#edwood)" stroke="#191817" stroke-width="2"/>
+<path d="M30 76h37v27H30zm91 0h37v27h-37z" fill="#302a25" stroke="#85725b"/><path d="M36 84h25m-25 8h25m66-8h25m-25 8h25" stroke="#181716" stroke-width="2"/>
+<path d="m12 63 11-38h144l11 38-10 8H22z" fill="url(#edtop)" stroke="#201d19" stroke-width="2"/><path d="M21 62h148" stroke="#b59a70" stroke-width="2"/>
+<rect x="47" y="30" width="68" height="25" rx="2" fill="#d8d1bf" stroke="#8f8879"/><path d="m54 37 46-1m-46 6h41m-40 6h31" stroke="#928b7c"/>
+<rect x="122" y="32" width="23" height="21" rx="2" fill="#282b2a" stroke="#a28d68"/><path d="M126 37h15m-15 4h15m-15 4h10" stroke="#72807a"/>
+<path d="M35 52q12-8 21 0" fill="none" stroke="#1c211d" stroke-width="3"/><circle cx="43" cy="45" r="4" fill="#d2bd8b"/>
+<path d="M151 29v-7m-5 7h11l-3 7h-5z" fill="#344334" stroke="#bea36d" stroke-width="1.4"/><path d="M151 36 146 50" stroke="#bea36d" stroke-width="2"/>
+</svg>"""
+
+SVG_TASK_CHAIR = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 88" width="84" height="88">
+<defs><linearGradient id="chleather" x2="0" y2="1"><stop stop-color="#684b38"/><stop offset="1" stop-color="#302720"/></linearGradient></defs>
+<ellipse cx="42" cy="80" rx="34" ry="6" fill="#070809" opacity=".44"/>
+<path d="M20 18q0-8 9-8h26q9 0 9 8v31H20z" fill="url(#chleather)" stroke="#201914" stroke-width="2"/>
+<path d="M27 16v27m15-30v32m15-29v27" stroke="#a17b58" stroke-width="1" opacity=".65"/><path d="M17 47h50l-4 18H21z" fill="#463328" stroke="#1f1a16" stroke-width="2"/>
+<path d="M25 64 22 77m37-13 3 13M23 76h-5m47 0h-5" stroke="#282a29" stroke-width="4" stroke-linecap="round"/><path d="M26 52h33" stroke="#b19470" opacity=".55"/>
+</svg>"""
+
+SVG_WASTEBASKET = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 62" width="52" height="62">
+<ellipse cx="26" cy="56" rx="20" ry="5" fill="#050607" opacity=".4"/><path d="m9 16 34 0-5 37H14z" fill="#35383a" stroke="#17191a" stroke-width="2"/>
+<path d="M15 23v23m8-24v25m8-25v25m8-24v23" stroke="#606569" stroke-width="2"/><path d="M7 15h38v6H7z" fill="#777266" stroke="#242625"/>
+<path d="m15 12 12-7 10 6-5 5-14-1z" fill="#c1b69f" stroke="#716c62"/><path d="m27 6 4 7" stroke="#877e6f"/>
+</svg>"""
+
+SVG_ACOUSTIC_PANEL = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 62" width="100" height="62">
+<rect x="5" y="5" width="90" height="52" rx="3" fill="#292d30" stroke="#121619" stroke-width="3"/><rect x="10" y="10" width="80" height="42" fill="#34383a" stroke="#66635a"/>
+<path d="M10 13h80m-80 8h80m-80 8h80m-80 8h80m-80 8h80" stroke="#202629" stroke-width="4"/><path d="m13 12 74 38m0-38L13 50" stroke="#4d5150" stroke-width="1" opacity=".45"/>
+</svg>"""
+
+SVG_DIRECTORATE_SEAL = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 82" width="96" height="82">
+<ellipse cx="48" cy="75" rx="38" ry="4" fill="#080a0c" opacity=".35"/>
+<rect x="7" y="5" width="82" height="67" rx="3" fill="#292f33" stroke="#151a1d" stroke-width="3"/>
+<rect x="12" y="10" width="72" height="57" fill="#373f42" stroke="#7d7867"/>
+<circle cx="48" cy="37" r="21" fill="#252b2d" stroke="#a89262" stroke-width="2"/><circle cx="48" cy="37" r="16" fill="none" stroke="#65706d"/>
+<path d="M42 48V26h9q8 0 8 6 0 4-4 5 6 1 6 5 0 6-9 6zm5-13h4q3 0 3-3t-3-3h-4zm0 9h5q4 0 4-3t-4-3h-5z" fill="#bca879"/>
+<path d="m21 16 3 2m48-2-3 2M21 58l3-2m48 2-3-2" stroke="#bca879" stroke-width="2"/>
+</svg>"""
+
+SVG_EVIDENCE_MARKER = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 48" width="44" height="48">
+<path d="m22 3 20 39H2z" fill="#d4b05b" stroke="#3d3425" stroke-width="2"/><path d="m22 12 12 24H10z" fill="#ead38e"/>
+<path d="m20 21 4-3v14m-5 0h10" fill="none" stroke="#30291e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>"""
+
 
 def get_room_objects() -> dict:
     """Renders and returns all cached Pygame surfaces for the room furniture."""
@@ -653,5 +747,14 @@ def get_room_objects() -> dict:
         'interrogation_table': render_svg(SVG_INTERROGATION_TABLE, 160, 110),
         'treasure_chest': render_svg(SVG_TREASURE_CHEST, 74, 64),
         'specimen_cabinet': render_svg(SVG_SPECIMEN_CABINET, 74, 110),
+        'crime_desk': render_svg(SVG_CRIME_DESK, 190, 130),
+        'records_table': render_svg(SVG_RECORDS_TABLE, 180, 116),
+        'audio_console': render_svg(SVG_AUDIO_CONSOLE, 190, 132),
+        'executive_desk': render_svg(SVG_EXECUTIVE_DESK, 190, 128),
+        'chair': render_svg(SVG_TASK_CHAIR, 84, 88),
+        'wastebasket': render_svg(SVG_WASTEBASKET, 52, 62),
+        'acoustic_panel': render_svg(SVG_ACOUSTIC_PANEL, 100, 62),
+        'directorate_seal': render_svg(SVG_DIRECTORATE_SEAL, 96, 82),
+        'evidence_marker': render_svg(SVG_EVIDENCE_MARKER, 44, 48),
     }
 

@@ -1,9 +1,4 @@
-"""
-Animated Evidence Document & Crime Photograph Inspection Modal for Case Unknown.
-
-Displays an animated confidential case file folder, polaroid photograph, case dossier report,
-and experience reward banner whenever a puzzle is solved.
-"""
+"""Recovered evidence document and field photograph modal for Case Unknown."""
 
 import math
 import pygame
@@ -11,17 +6,15 @@ from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     UI_ACCENT_GOLD,
-    UI_SUCCESS_GREEN,
-    UI_HIGHLIGHT_RED,
 )
 from src.treasure import TreasureItem
 from src.experience import ExperienceManager
 
 
 class EvidenceRevealModal:
-    """Animated confidential case file and photograph reveal screen."""
+    """A restrained recovered-document reveal; accepts the old XP argument for compatibility."""
 
-    def __init__(self, item: TreasureItem, exp_mgr: ExperienceManager):
+    def __init__(self, item: TreasureItem, exp_mgr: ExperienceManager | None = None):
         self.item = item
         self.exp_mgr = exp_mgr
         self.anim_time = 0.0
@@ -34,7 +27,6 @@ class EvidenceRevealModal:
         self.font_sub = pygame.font.SysFont("georgia", 12, italic=True)
         self.font_typewriter = pygame.font.SysFont("couriernew", 12, bold=True)
         self.font_btn = pygame.font.SysFont("segoeui", 13, bold=True)
-        self.font_exp = pygame.font.SysFont("georgia", 13, bold=True)
 
         # Base Modal Dimensions
         self.target_w = 580
@@ -62,149 +54,81 @@ class EvidenceRevealModal:
         return False
 
     def draw(self, surface: pygame.Surface):
-        # 1. Dark Vignette Backdrop (Fades in)
+        """Lay the recovered object into a field dossier without XP or rank UI."""
         fade_t = min(1.0, self.anim_time * 3.5)
         backdrop = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        backdrop.fill((6, 8, 12, int(230 * fade_t)))
+        backdrop.fill((5, 8, 10, int(208 * fade_t)))
         surface.blit(backdrop, (0, 0))
 
-        # 2. Smooth Elastic Pop-in Scale Animation
         t = min(1.0, self.anim_time * 2.8)
-        # Elastic ease-out
-        scale = 1.0 - math.pow(2, -10 * t) * math.cos(t * math.pi * 1.5) if t < 1.0 else 1.0
-        scale = max(0.2, min(1.05, scale))
+        scale = max(0.92, min(1.0, 1 - (1 - t) ** 3 * 0.08))
+        panel = pygame.Surface((self.target_w, self.target_h), pygame.SRCALPHA)
+        panel.fill((25, 30, 31))
+        panel_rect = panel.get_rect()
+        pygame.draw.rect(panel, (133, 116, 81), panel_rect, 1, border_radius=7)
+        pygame.draw.rect(panel, (53, 59, 57), panel_rect.inflate(-8, -8), 1, border_radius=5)
+        pygame.draw.rect(panel, (38, 45, 44), (1, 1, self.target_w - 2, 66), border_top_left_radius=7, border_top_right_radius=7)
+        pygame.draw.rect(panel, (176, 143, 83), (0, 0, 5, self.target_h), border_top_left_radius=7, border_bottom_left_radius=7)
 
-        # Render document on an unscaled canvas first
-        doc_surf = pygame.Surface((self.target_w, self.target_h), pygame.SRCALPHA)
+        kicker = self.font_typewriter.render("CASE FILE  /  RECOVERED MATERIAL", True, (153, 165, 151))
+        panel.blit(kicker, (30, 18))
+        title = self.font_header.render(self.item.reward_name, True, (233, 220, 185))
+        panel.blit(title, (30, 37))
+        stamp = self.font_stamp.render("RECOVERED", True, (183, 148, 99))
+        stamp_rect = pygame.Rect(self.target_w - stamp.get_width() - 54, 25, stamp.get_width() + 22, 26)
+        pygame.draw.rect(panel, (42, 49, 44), stamp_rect, border_radius=3)
+        pygame.draw.rect(panel, (112, 111, 83), stamp_rect, 1, border_radius=3)
+        panel.blit(stamp, stamp.get_rect(center=stamp_rect.center))
+        pygame.draw.line(panel, (86, 91, 80), (28, 78), (self.target_w - 28, 78), 1)
 
-        # Aged Manila File Folder Base
-        pygame.draw.rect(doc_surf, (236, 226, 206), (0, 0, self.target_w, self.target_h), border_radius=8)
-        # Manila tab top-left
-        pygame.draw.polygon(doc_surf, (222, 210, 186), [(0, 0), (140, 0), (160, 22), (0, 22)])
-        doc_tab_text = self.font_typewriter.render("CASE FILE #001", True, (90, 80, 65))
-        doc_surf.blit(doc_tab_text, (16, 4))
+        photo = pygame.Rect(30, 99, 205, 260)
+        pygame.draw.rect(panel, (14, 19, 20), photo, border_radius=4)
+        pygame.draw.rect(panel, (94, 97, 86), photo, 1, border_radius=4)
+        image_rect = pygame.Rect(photo.x + 10, photo.y + 10, photo.width - 20, photo.height - 50)
+        pygame.draw.rect(panel, (28, 31, 29), image_rect)
+        self._draw_photo_artwork(panel, *image_rect)
+        caption = self.font_typewriter.render("FIELD PHOTOGRAPH", True, (156, 157, 140))
+        panel.blit(caption, caption.get_rect(center=(photo.centerx, photo.bottom - 21)))
 
-        # Inner paper sheet
-        sheet_rect = pygame.Rect(14, 26, self.target_w - 28, self.target_h - 40)
-        pygame.draw.rect(doc_surf, (246, 242, 230), sheet_rect, border_radius=4)
-        pygame.draw.rect(doc_surf, (200, 188, 164), sheet_rect, 1, border_radius=4)
-
-        # Faint aged paper horizontal lines
-        for ly in range(sheet_rect.top + 70, sheet_rect.bottom - 90, 22):
-            pygame.draw.line(doc_surf, (228, 222, 208), (sheet_rect.left + 16, ly), (sheet_rect.right - 16, ly), 1)
-
-        # Red Rubber Stamp: [CONFIDENTIAL EVIDENCE]
-        stamp_text = self.font_stamp.render("EVIDENCE RECOVERED", True, (185, 45, 45))
-        stamp_surf = pygame.Surface((stamp_text.get_width() + 16, stamp_text.get_height() + 8), pygame.SRCALPHA)
-        pygame.draw.rect(stamp_surf, (185, 45, 45), (0, 0, stamp_surf.get_width(), stamp_surf.get_height()), 2, border_radius=4)
-        stamp_surf.blit(stamp_text, (8, 4))
-        # Rotate stamp slightly
-        rotated_stamp = pygame.transform.rotate(stamp_surf, -7)
-        doc_surf.blit(rotated_stamp, (sheet_rect.right - rotated_stamp.get_width() - 14, sheet_rect.top + 14))
-
-        # Header Title
-        title_surf = self.font_header.render(self.item.reward_name.upper(), True, (35, 30, 24))
-        doc_surf.blit(title_surf, (sheet_rect.left + 20, sheet_rect.top + 18))
-
-        sub_surf = self.font_sub.render(f"Recovered from: {self.item.name}", True, (105, 88, 65))
-        doc_surf.blit(sub_surf, (sheet_rect.left + 20, sheet_rect.top + 42))
-
-        # Thin brass divider
-        pygame.draw.line(doc_surf, (180, 150, 105), (sheet_rect.left + 20, sheet_rect.top + 62), (sheet_rect.right - 20, sheet_rect.top + 62), 1)
-
-        # 3. Polaroid Crime Scene Photograph / Evidence Artifact
-        photo_x = sheet_rect.left + 22
-        photo_y = sheet_rect.top + 80
-        photo_w = 145
-        photo_h = 165
-
-        # Photo border (white polaroid cardboard)
-        pygame.draw.rect(doc_surf, (255, 255, 255), (photo_x, photo_y, photo_w, photo_h), border_radius=3)
-        pygame.draw.rect(doc_surf, (190, 185, 175), (photo_x, photo_y, photo_w, photo_h), 1, border_radius=3)
-
-        # Photo image frame
-        frame_x = photo_x + 8
-        frame_y = photo_y + 8
-        frame_w = photo_w - 16
-        frame_h = 120
-        pygame.draw.rect(doc_surf, (22, 26, 32), (frame_x, frame_y, frame_w, frame_h))
-
-        # Draw thematic evidence illustration inside polaroid
-        self._draw_photo_artwork(doc_surf, frame_x, frame_y, frame_w, frame_h)
-
-        # Polaroid handwritten caption (centered within bottom chin)
-        caption_s = self.font_typewriter.render("EXHIBIT #A", True, (85, 75, 65))
-        caption_rect = caption_s.get_rect(center=(photo_x + photo_w // 2, photo_y + photo_h - 16))
-        doc_surf.blit(caption_s, caption_rect)
-
-        # 4. Typed Case Evidence Report (Wrapped text)
-        report_x = photo_x + photo_w + 20
-        report_y = photo_y + 4
-        report_w = sheet_rect.right - report_x - 16
-
-        # Description wrapped cleanly
-        words = self.item.reward_description.split(" ")
-        lines = []
-        cur = []
-        for w in words:
-            test = " ".join(cur + [w])
-            if self.font_typewriter.size(test)[0] <= report_w:
-                cur.append(w)
+        text_x, text_y = 260, 105
+        source_label = self.font_typewriter.render("SOURCE", True, (177, 146, 92))
+        panel.blit(source_label, (text_x, text_y))
+        text_y += 23
+        source = self.font_sub.render(self.item.name, True, (205, 205, 188))
+        panel.blit(source, (text_x, text_y))
+        text_y += 34
+        pygame.draw.line(panel, (66, 73, 68), (text_x, text_y), (self.target_w - 30, text_y), 1)
+        text_y += 18
+        memo = self.font_typewriter.render("OBSERVATION", True, (177, 146, 92))
+        panel.blit(memo, (text_x, text_y))
+        text_y += 25
+        report_w = self.target_w - text_x - 32
+        words, lines, line = self.item.reward_description.split(), [], []
+        for word in words:
+            test = " ".join(line + [word])
+            if self.font_sub.size(test)[0] <= report_w:
+                line.append(word)
             else:
-                lines.append(" ".join(cur))
-                cur = [w]
-        if cur:
-            lines.append(" ".join(cur))
+                lines.append(" ".join(line))
+                line = [word]
+        if line:
+            lines.append(" ".join(line))
+        for text_line in lines:
+            panel.blit(self.font_sub.render(text_line, True, (207, 208, 195)), (text_x, text_y))
+            text_y += 22
 
-        # Label: OFFICIAL FORENSIC MEMO
-        memo_lbl = self.font_typewriter.render("FORENSIC RECORD:", True, (135, 60, 40))
-        doc_surf.blit(memo_lbl, (report_x, report_y))
-        report_y += 20
+        note = self.font_sub.render("The item has been added to the case record.", True, (155, 181, 145))
+        panel.blit(note, (text_x, max(text_y + 18, 318)))
+        footer = pygame.Rect(20, self.target_h - 59, self.target_w - 40, 38)
+        pygame.draw.rect(panel, (34, 41, 39), footer, border_radius=4)
+        pygame.draw.rect(panel, (77, 91, 76), footer, 1, border_radius=4)
+        action = self.font_btn.render("RETURN TO INVESTIGATION", True, (219, 220, 201))
+        panel.blit(action, action.get_rect(center=(footer.centerx - 46, footer.centery)))
+        keys = self.font_typewriter.render("ENTER", True, (191, 166, 108))
+        panel.blit(keys, (footer.right - keys.get_width() - 12, footer.centery - keys.get_height() // 2))
 
-        for line in lines:
-            line_s = self.font_typewriter.render(line, True, (45, 42, 38))
-            doc_surf.blit(line_s, (report_x, report_y))
-            report_y += 19
-
-        # Clue summary
-        report_y += 8
-        hint_s = self.font_typewriter.render(f"STATUS: VERIFIED & LOGGED", True, (60, 110, 70))
-        doc_surf.blit(hint_s, (report_x, report_y))
-
-        # 5. Experience Gain Banner
-        exp_box = pygame.Rect(sheet_rect.left + 20, sheet_rect.bottom - 110, sheet_rect.width - 40, 46)
-        pygame.draw.rect(doc_surf, (30, 36, 44), exp_box, border_radius=5)
-        pygame.draw.rect(doc_surf, UI_ACCENT_GOLD, exp_box, 1, border_radius=5)
-
-        star_x = exp_box.left + 24
-        star_y = exp_box.centery
-        pygame.draw.circle(doc_surf, UI_ACCENT_GOLD, (star_x, star_y), 11)
-        pygame.draw.circle(doc_surf, (25, 30, 38), (star_x, star_y), 4)
-
-        lvl, rank_name = self.exp_mgr.level_and_rank
-        exp_txt = self.font_exp.render(f"+150 EXP REWARDED!   Current Rank: LVL {lvl} {rank_name}", True, (245, 220, 150))
-        doc_surf.blit(exp_txt, (star_x + 18, exp_box.y + 14))
-
-        # 6. Action Button: [ FILE EVIDENCE & RESUME ]
-        btn_r = pygame.Rect(sheet_rect.centerx - 130, sheet_rect.bottom - 48, 260, 34)
-        mpos = pygame.mouse.get_pos()
-        is_hover = self.btn_dismiss_rect.collidepoint(mpos)
-        btn_bg = (40, 95, 55) if is_hover else (30, 70, 42)
-        pygame.draw.rect(doc_surf, btn_bg, btn_r, border_radius=5)
-        pygame.draw.rect(doc_surf, UI_SUCCESS_GREEN, btn_r, 1, border_radius=5)
-        btn_s = self.font_btn.render("FILE EVIDENCE [SPACE / CLICK]", True, (245, 250, 245))
-        doc_surf.blit(btn_s, btn_s.get_rect(center=btn_r.center))
-
-        # Apply scale animation if scale != 1.0
-        if abs(scale - 1.0) > 0.01:
-            scaled_w = int(self.target_w * scale)
-            scaled_h = int(self.target_h * scale)
-            scaled_surf = pygame.transform.smoothscale(doc_surf, (scaled_w, scaled_h))
-            draw_x = (SCREEN_WIDTH - scaled_w) // 2
-            draw_y = (SCREEN_HEIGHT - scaled_h) // 2
-            surface.blit(scaled_surf, (draw_x, draw_y))
-        else:
-            surface.blit(doc_surf, (self.target_x, self.target_y))
+        scaled = pygame.transform.smoothscale(panel, (int(self.target_w * scale), int(self.target_h * scale)))
+        surface.blit(scaled, scaled.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)))
 
     def _draw_photo_artwork(self, surface: pygame.Surface, x: int, y: int, w: int, h: int):
         """Draws atmospheric mini vector artwork inside the polaroid photo frame."""
