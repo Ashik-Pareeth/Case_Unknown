@@ -472,4 +472,352 @@ ROOMS_DATA = {
             },
         ],
     },
+
+    # =========================================================================
+    # LEVEL 1 — THE SILENT WITNESS (directives.txt §4)
+    # =========================================================================
+
+    # Room 1: The Crime Scene
+    "crime_scene": {
+        "id": "crime_scene",
+        "name": "The Crime Scene — Study of Martin Hale",
+        "subtitle": "Level 1 • Where Martin Hale was discovered deceased at his desk",
+        "floor_style": "parquet",
+        "colors": {
+            "wall": COLOR_WALL,
+            "wall_top": COLOR_WALL_TOP,
+            "wall_base": COLOR_WALL_BASE,
+            "floor_a": (48, 36, 28),
+            "floor_b": (40, 30, 22),
+            "floor_seam": (28, 20, 14),
+        },
+        "lighting": {
+            "ambient_tint": (255, 210, 140, 16),
+            "warm_lamps": [(460, 275)],
+            "sconces": [(110, 55), (850, 55)],
+            "moon_rays": [
+                [(170, 95), (250, 95), (290, 230), (130, 230)],
+            ],
+        },
+        "doors": [
+            {
+                "wall": "right",
+                "target_room": "records_room",
+                "target_pos": (140, 350),
+                "label": "East Hallway -> Records Archive",
+                "gate_id": "door_crime_scene_to_records",
+                "gate_msg": "Passage Restricted: Examine and record the primary crime scene evidence before leaving.",
+            },
+        ],
+        "wall_decor": [
+            {"prop": "window", "pos": (170, 16)},
+            {"prop": "sconce", "pos": (90, 35)},
+            {"prop": "sconce", "pos": (830, 35)},
+        ],
+        "floor_decor": [
+            {"prop": "rug", "pos": (370, 240)},
+        ],
+        "furniture": [
+            {
+                "prop": "desk",
+                "pos": (390, 245),
+                "hitbox": (398, 290, 164, 65),
+                "id": "hale_desk",
+                "name": "Martin Hale's Study Desk",
+                "description": "Martin Hale was found seated here. An official Preliminary Incident Log is pinned under the paperweight.",
+                "obj_type": "evidence",
+                "evidence_id": "hale_autopsy_report",
+                "full_text": (
+                    "INCIDENT REPORT #4092\n"
+                    "Subject: Martin Hale, Senior Archivist.\n"
+                    "Found: Seated upright at study desk, sharp trauma to upper torso.\n"
+                    "Status: Time of death estimated at 21:40. Office window latched from inside.\n"
+                    "Note: Hale's personal diary is missing, but desk drawers remain locked."
+                ),
+            },
+            {
+                "prop": "bookshelf",
+                "pos": (100, 105),
+                "hitbox": (102, 185, 80, 48),
+                "id": "hale_bookshelf",
+                "name": "Archival Reference Bookshelf",
+                "description": "Dusty municipal census records and regional water distribution surveys from 1950 through 1975.",
+                "obj_type": "examinable",
+            },
+            {
+                "prop": "filing_cabinet",
+                "pos": (780, 120),
+                "hitbox": (784, 170, 56, 42),
+                "id": "hale_cabinet",
+                "name": "Private Filing Cabinet",
+                "description": "Personal research correspondence. A folder labelled 'Project Echo (Classified)' has been emptied.",
+                "obj_type": "examinable",
+            },
+            {
+                "prop": "sofa",
+                "pos": (110, 390),
+                "hitbox": (118, 435, 154, 50),
+                "id": "hale_sofa",
+                "name": "Study Chesterfield Sofa",
+                "description": "Worn leather settee with scattered drafts and reference notes.",
+                "obj_type": "environmental",
+            },
+        ],
+        "interactables": [
+            {
+                "id": "shattered_watch",
+                "name": "Shattered Pocket Chronometer",
+                "description": "A heavy gold pocket watch dropped beneath the desk edge. Hands are stopped abruptly at 22:15.",
+                "trigger_rect": (330, 285, 60, 50),
+                "badge_pos": (360, 310),
+                "obj_type": "evidence",
+                "evidence_id": "shattered_chronometer",
+                "full_text": (
+                    "ARTIFACT EXAMINATION:\n"
+                    "Heavy brass pocket watch found beneath the desk edge.\n"
+                    "The casing was cracked by sudden blunt impact.\n"
+                    "Hands are frozen at 22:15. Contradicts the 21:40 time of death in the initial dispatch."
+                ),
+            },
+            {
+                "id": "latched_window",
+                "name": "Latched Study Window",
+                "description": "Heavy wooden casement latched tightly from inside. Rain lashes the glass.",
+                "trigger_rect": (170, 95, 100, 50),
+                "badge_pos": (220, 110),
+                "obj_type": "environmental",
+            },
+        ],
+    },
+
+    # Room 2: The Records Room
+    "records_room": {
+        "id": "records_room",
+        "name": "The Records Room — Directorate Archive",
+        "subtitle": "Level 1 • Official dispatch ledgers and municipal registries",
+        "floor_style": "concrete",
+        "colors": {
+            "wall": (38, 42, 50),
+            "wall_top": (52, 58, 68),
+            "wall_base": (28, 30, 38),
+            "floor_a": (36, 38, 44),
+            "floor_b": (30, 32, 38),
+            "floor_seam": (22, 24, 28),
+        },
+        "lighting": {
+            "ambient_tint": (220, 230, 255, 14),
+            "warm_lamps": [(640, 290)],
+            "sconces": [(480, 55)],
+            "moon_rays": [],
+        },
+        "doors": [
+            {
+                "wall": "left",
+                "target_room": "crime_scene",
+                "target_pos": (820, 350),
+                "label": "West Passage -> The Crime Scene",
+            },
+            {
+                "wall": "right",
+                "target_room": "recording_room",
+                "target_pos": (140, 350),
+                "label": "East Hallway -> Audio Recording Room",
+                "gate_id": "door_records_to_recording",
+                "gate_msg": "Audio Room Locked: Discover and record the altered dispatch ledger first.",
+            },
+        ],
+        "wall_decor": [
+            {"prop": "sconce", "pos": (470, 35)},
+            {"prop": "evidence_board", "pos": (395, 20)},
+        ],
+        "floor_decor": [],
+        "furniture": [
+            {
+                "prop": "filing_cabinet",
+                "pos": (200, 115),
+                "hitbox": (204, 165, 56, 42),
+                "id": "ledger_cabinet",
+                "name": "Dispatch Log Cabinet",
+                "description": "Directorate Dispatch Log 1988-B has chemical solvent erasures across October dates.",
+                "obj_type": "evidence",
+                "evidence_id": "altered_archive_ledger",
+                "full_text": (
+                    "DIRECTORATE DISPATCH LOG 1988-B:\n"
+                    "Entries for October 12-14 show evident chemical erasure.\n"
+                    "A faint carbon impression underneath reads: 'Requisition - Dossier Echo 4 - Voss, A.'\n"
+                    "Someone altered official records prior to the detective squad arriving."
+                ),
+            },
+            {
+                "prop": "desk",
+                "pos": (580, 260),
+                "hitbox": (588, 305, 164, 65),
+                "id": "clerk_table",
+                "name": "Records Inspection Table",
+                "description": "Examination desk with ink blotters, chemical solvent bottles, and magnifying glasses.",
+                "obj_type": "examinable",
+            },
+            {
+                "prop": "bookshelf",
+                "pos": (100, 105),
+                "hitbox": (102, 185, 80, 48),
+                "id": "county_archives",
+                "name": "Municipal County Ledgers",
+                "description": "Volumes detailing district budget allocations and historical town council resolutions.",
+                "obj_type": "examinable",
+            },
+        ],
+        "interactables": [],
+    },
+
+    # Room 3: The Recording Room
+    "recording_room": {
+        "id": "recording_room",
+        "name": "The Recording Room — Audio Archive",
+        "subtitle": "Level 1 • Sound playback devices and confidential recorded memos",
+        "floor_style": "parquet",
+        "colors": {
+            "wall": (44, 46, 52),
+            "wall_top": (60, 64, 72),
+            "wall_base": (32, 34, 40),
+            "floor_a": (42, 34, 28),
+            "floor_b": (36, 28, 22),
+            "floor_seam": (24, 18, 14),
+        },
+        "lighting": {
+            "ambient_tint": (255, 215, 140, 18),
+            "warm_lamps": [(420, 280)],
+            "sconces": [(110, 55), (850, 55)],
+            "moon_rays": [],
+        },
+        "doors": [
+            {
+                "wall": "left",
+                "target_room": "records_room",
+                "target_pos": (820, 350),
+                "label": "West Passage -> Records Room",
+            },
+            {
+                "wall": "right",
+                "target_room": "restricted_office",
+                "target_pos": (140, 350),
+                "label": "East Passage -> Restricted Office",
+                "gate_id": "door_recording_to_restricted",
+                "gate_msg": "Restricted Office Restricted: Listen to Hale's tape recording first.",
+            },
+        ],
+        "wall_decor": [
+            {"prop": "sconce", "pos": (90, 35)},
+            {"prop": "sconce", "pos": (830, 35)},
+        ],
+        "floor_decor": [
+            {"prop": "rug", "pos": (360, 240)},
+        ],
+        "furniture": [
+            {
+                "prop": "desk",
+                "pos": (390, 245),
+                "hitbox": (398, 290, 164, 65),
+                "id": "audio_console",
+                "name": "Dictaphone Audio Playback Console",
+                "description": "A heavy magnetic reel recorder loaded with Martin Hale's final memo reel.",
+                "obj_type": "evidence",
+                "evidence_id": "hale_magnetic_tape",
+                "full_text": (
+                    "AUDIO TRANSCRIPT [REEL EXCERPT]:\n"
+                    "HALE (audio raspy): '...if they seal the west archive, it's not to protect the data.\n"
+                    "They are burying the personnel rosters. Adrian Voss signed the transfer order himself...\n"
+                    "Nora tried to warn them. The town... they never even knew what was tested...'"
+                ),
+            },
+            {
+                "prop": "bookshelf",
+                "pos": (760, 105),
+                "hitbox": (762, 185, 80, 48),
+                "id": "spool_shelves",
+                "name": "Magnetic Reel Vault",
+                "description": "Carefully labelled reels containing archived police dispatches and committee testimony.",
+                "obj_type": "examinable",
+            },
+        ],
+        "interactables": [],
+    },
+
+    # Room 4: The Restricted Office
+    "restricted_office": {
+        "id": "restricted_office",
+        "name": "The Restricted Office — Adrian Voss",
+        "subtitle": "Level 1 • Directorate Executive Office & Authorization Vault",
+        "floor_style": "parquet",
+        "colors": {
+            "wall": (35, 38, 45),
+            "wall_top": (48, 52, 62),
+            "wall_base": (25, 28, 34),
+            "floor_a": (38, 30, 24),
+            "floor_b": (32, 24, 18),
+            "floor_seam": (20, 16, 12),
+        },
+        "lighting": {
+            "ambient_tint": (255, 205, 120, 20),
+            "warm_lamps": [(460, 260)],
+            "sconces": [(110, 55), (850, 55)],
+            "moon_rays": [
+                [(710, 95), (790, 95), (830, 230), (670, 230)],
+            ],
+        },
+        "doors": [
+            {
+                "wall": "left",
+                "target_room": "recording_room",
+                "target_pos": (820, 350),
+                "label": "West Passage -> Recording Room",
+            },
+        ],
+        "wall_decor": [
+            {"prop": "window", "pos": (710, 16)},
+            {"prop": "sconce", "pos": (90, 35)},
+            {"prop": "sconce", "pos": (830, 35)},
+        ],
+        "floor_decor": [
+            {"prop": "rug", "pos": (370, 230)},
+        ],
+        "furniture": [
+            {
+                "prop": "desk",
+                "pos": (390, 235),
+                "hitbox": (398, 280, 164, 65),
+                "id": "voss_desk",
+                "name": "Director Voss's Executive Desk",
+                "description": "Heavy mahogany desk. Pinned to the leather blotter is Executive Authorization #88-C.",
+                "obj_type": "evidence",
+                "evidence_id": "voss_authorization_slip",
+                "full_text": (
+                    "DIRECTORATE EXECUTIVE DIRECTIVE:\n"
+                    "Authorized by: Adrian Voss, Operations Directorate.\n"
+                    "Action: Immediate relocation of all Project Echo field journals to deep vault.\n"
+                    "Mandate: No personnel outside Class-4 clearance may review Hale's historical files.\n"
+                    "Signature verified: Adrian Voss."
+                ),
+            },
+            {
+                "prop": "safe",
+                "pos": (760, 120),
+                "hitbox": (764, 160, 72, 45),
+                "id": "directorate_vault",
+                "name": "Executive Directorate Safe",
+                "description": "Reinforced steel safe bearing the Directorate seal and marked: 'DOSSIER ECHO - LEVEL 2 DIRECTIVE'.",
+                "obj_type": "examinable",
+            },
+            {
+                "prop": "sofa",
+                "pos": (110, 390),
+                "hitbox": (118, 435, 154, 50),
+                "id": "executive_sofa",
+                "name": "Formal Leather Settee",
+                "description": "Pristine black leather sofa reserved for high-ranking Directorate officials.",
+                "obj_type": "environmental",
+            },
+        ],
+        "interactables": [],
+    },
 }

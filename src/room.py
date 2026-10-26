@@ -30,6 +30,7 @@ from src.settings import (
 from assets.svg_assets import get_room_objects
 from src.interaction import InteractionManager
 from src.rooms_data import ROOMS_DATA
+from src.evidence_manager import TYPE_EXAMINABLE, TYPE_EVIDENCE, EvidenceManager
 
 
 class Room:
@@ -44,12 +45,14 @@ class Room:
         room_id: str = "office",
         room_data: dict = None,
         treasure_mgr=None,
+        evidence_mgr: EvidenceManager | None = None,
     ):
         self.room_id = room_id
         self.data = room_data if room_data is not None else ROOMS_DATA.get(room_id, ROOMS_DATA["office"])
         self.name = self.data.get("name", "Precinct Room")
         self.subtitle = self.data.get("subtitle", "")
         self.treasure_mgr = treasure_mgr
+        self.evidence_mgr = evidence_mgr
 
         # Room bounds
         self.rect = pygame.Rect(ROOM_X, ROOM_Y, ROOM_WIDTH, ROOM_HEIGHT)
@@ -117,6 +120,8 @@ class Room:
                 "target_room": door["target_room"],
                 "target_pos": door["target_pos"],
                 "label": door.get("label", "North Door"),
+                "gate_id": door.get("gate_id", ""),
+                "gate_msg": door.get("gate_msg", ""),
             })
         else:
             self.solid_objects.append(
@@ -144,6 +149,8 @@ class Room:
                 "target_room": door["target_room"],
                 "target_pos": door["target_pos"],
                 "label": door.get("label", "South Door"),
+                "gate_id": door.get("gate_id", ""),
+                "gate_msg": door.get("gate_msg", ""),
             })
         else:
             self.solid_objects.append(
@@ -170,6 +177,8 @@ class Room:
                 "target_room": door["target_room"],
                 "target_pos": door["target_pos"],
                 "label": door.get("label", "West Door"),
+                "gate_id": door.get("gate_id", ""),
+                "gate_msg": door.get("gate_msg", ""),
             })
         else:
             self.solid_objects.append(
@@ -197,6 +206,8 @@ class Room:
                 "target_room": door["target_room"],
                 "target_pos": door["target_pos"],
                 "label": door.get("label", "East Door"),
+                "gate_id": door.get("gate_id", ""),
+                "gate_msg": door.get("gate_msg", ""),
             })
         else:
             self.solid_objects.append(
@@ -252,6 +263,9 @@ class Room:
                     description=f["description"],
                     trigger_rect=hitbox.inflate(45, 45),
                     badge_pos=(rect.centerx, rect.top + 20),
+                    obj_type=f.get("obj_type", TYPE_EXAMINABLE),
+                    evidence_id=f.get("evidence_id", ""),
+                    full_text=f.get("full_text", ""),
                     is_treasure=is_treasure,
                     treasure_id=treasure_id,
                 )
@@ -264,12 +278,18 @@ class Room:
                 description=inter["description"],
                 trigger_rect=pygame.Rect(*inter["trigger_rect"]),
                 badge_pos=inter["badge_pos"],
+                obj_type=inter.get("obj_type", TYPE_EXAMINABLE),
+                evidence_id=inter.get("evidence_id", ""),
+                full_text=inter.get("full_text", ""),
             )
 
     def check_door_transitions(self, player_hitbox: pygame.Rect) -> dict | None:
         """Returns the door configuration if the player has entered a doorway trigger."""
         for d in self.doorways:
             if player_hitbox.colliderect(d["trigger_rect"]):
+                gate_id = d.get("gate_id")
+                if gate_id and self.evidence_mgr and not self.evidence_mgr.is_gate_unlocked(gate_id):
+                    return {"blocked": True, "door": d}
                 return d
         return None
 

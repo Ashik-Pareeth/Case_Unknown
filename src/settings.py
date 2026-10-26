@@ -60,6 +60,7 @@ STATE_PLAYING = "playing"
 STATE_PUZZLE = "puzzle"
 STATE_MAP = "map"
 STATE_EVIDENCE = "evidence"
+STATE_JOURNAL = "journal"
 STATE_REVEAL = "reveal"
 
 

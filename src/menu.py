@@ -127,8 +127,7 @@ class MenuSystem:
         elif option_id == "MAP":
             return "MAP"
         elif option_id == "EVIDENCE":
-            self.current_screen = "EVIDENCE"
-            return None
+            return "JOURNAL"
         elif option_id == "CONTROLS":
             self.current_screen = "CONTROLS"
             return None
@@ -327,12 +326,12 @@ class MenuSystem:
         surface.blit(c_title, (box_x + 24, box_y + 18))
 
         controls_list = [
-            ("WASD / Arrow Keys", "Move Detective through rooms and corridors"),
-            ("E / Spacebar", "Inspect clues, documents, and open treasure vaults"),
+            ("WASD / Arrows", "Move Detective through rooms and corridors"),
+            ("E / Spacebar", "Inspect clues, documents, and open rooms"),
+            ("J", "Open Investigation Journal (Evidence, Connections, Leads)"),
             ("M / TAB", "Open Precinct Blueprint Floor Plan Map"),
             ("ESC", "Pause game / Open Main Menu / Close modals"),
             ("F11 / F", "Toggle Fullscreen display mode"),
-            ("Number Keys 0-9", "Direct digit entry in Number Lock puzzles"),
             ("Mouse Click", "Click buttons, rotate dials, and select options"),
         ]
 
