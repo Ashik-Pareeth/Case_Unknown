@@ -1059,7 +1059,7 @@ def _field_detective_svg(direction: str, step: int, bob: int) -> str:
     kit = '<path d="M84 81h7v17h-7z" fill="#252b2c" stroke="#b69a65"/><path d="M86 85h3m-3 3h3" stroke="#b69a65"/>' if direction == "down" else '<path d="M43 78h5v17h-5z" fill="#494b43" stroke="#b69a65"/>'
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="128" height="160">
 <defs><linearGradient id="fieldcoat" x1="0" y1="0" x2="1" y2="0"><stop stop-color="{coat_dark}"/><stop offset=".45" stop-color="{coat_lit}"/><stop offset="1" stop-color="{coat}"/></linearGradient></defs>
-{shadow}{legs}<g transform="translate(0 {bob})">{arms}{coat_svg}{face}{hat_svg if direction != 'right' else ''}{kit}</g></svg>'''
+{shadow}<g transform="translate(-6.4 {bob - 8}) scale(1.1)">{legs}{arms}{coat_svg}{face}{hat_svg if direction != 'right' else ''}{kit}</g></svg>'''
 
 
 # Replace the highly detailed poster-scale portrait generator with this small, readable
