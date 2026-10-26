@@ -359,6 +359,24 @@ class Room:
             for x in range(self.floor_rect.left + 140, self.floor_rect.right, 180):
                 pygame.draw.line(surface, self.color_floor_seam, (x, self.floor_rect.top), (x, self.floor_rect.bottom), 2)
 
+        # Recessed wall panels give the upper wall a finished, precinct-office feel.
+        panel_top = self.rect.top + 12
+        panel_bottom = self.rect.top + self.top_wall_height - 13
+        panel_color = tuple(max(0, min(255, c + 7)) for c in self.color_wall_top)
+        panel_line = tuple(max(0, c - 8) for c in self.color_wall_top)
+        for px in range(self.rect.left + 20, self.rect.right - 14, 74):
+            panel = pygame.Rect(px, panel_top, 58, panel_bottom - panel_top)
+            pygame.draw.rect(surface, panel_color, panel, 1, border_radius=2)
+            pygame.draw.line(surface, panel_line, (px + 5, panel_top + 5), (px + 5, panel_bottom - 5), 1)
+        pygame.draw.line(surface, tuple(min(255, c + 15) for c in self.color_wall_top),
+                         (self.rect.left, panel_bottom + 5), (self.rect.right, panel_bottom + 5), 2)
+
+        # Floor inset perimeter and subtle perspective guide seams.
+        pygame.draw.rect(surface, tuple(min(255, c + 12) for c in self.color_floor_a), self.floor_rect, 1)
+        for inset in (12, 24):
+            guide = self.floor_rect.inflate(-inset * 2, -inset * 2)
+            pygame.draw.rect(surface, self.color_floor_seam, guide, 1)
+
         # 3. Baseboard trim
         pygame.draw.rect(
             surface,
@@ -394,6 +412,12 @@ class Room:
                 pygame.draw.rect(surface, (85, 70, 50), mat_rect, 1)
 
         # 6. Wall Mounted Decor
+        plaque_text = self.door_font.render(self.name.upper(), True, (205, 177, 121))
+        plaque = pygame.Rect(self.rect.centerx - max(54, plaque_text.get_width() // 2 + 14),
+                             self.rect.top + 5, max(108, plaque_text.get_width() + 28), 18)
+        pygame.draw.rect(surface, (27, 30, 34), plaque, border_radius=3)
+        pygame.draw.rect(surface, (99, 79, 49), plaque, 1, border_radius=3)
+        surface.blit(plaque_text, plaque_text.get_rect(center=plaque.center))
         for item in self.wall_decor:
             surface.blit(item["surface"], item["rect"])
 

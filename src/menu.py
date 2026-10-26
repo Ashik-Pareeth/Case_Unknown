@@ -25,6 +25,7 @@ from src.settings import (
 from typing import Optional
 from src.treasure import TreasureManager
 from src.experience import ExperienceManager
+from assets.svg_assets import get_character_animations
 
 
 class MenuSystem:
@@ -45,6 +46,8 @@ class MenuSystem:
         self.font_card_title = pygame.font.SysFont("georgia", 15, bold=True)
         self.font_card_body = pygame.font.SysFont("segoeui", 12)
         self.font_card_sub = pygame.font.SysFont("segoeui", 11, italic=True)
+        self.font_kicker = pygame.font.SysFont("segoeui", 10, bold=True)
+        self.detective = get_character_animations()["down"]["idle"][0]
 
         # Main Menu Options
         self.menu_options = [
@@ -61,7 +64,7 @@ class MenuSystem:
         btn_w = 340
         btn_h = 44
         btn_spacing = 14
-        start_y = 230
+        start_y = 252
         for i in range(len(self.menu_options)):
             bx = (SCREEN_WIDTH - btn_w) // 2
             by = start_y + i * (btn_h + btn_spacing)
@@ -136,30 +139,48 @@ class MenuSystem:
         return None
 
     def draw(self, surface: pygame.Surface, has_active_game: bool):
-        # 1. Dark Atmospheric Background
-        backdrop = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        backdrop.fill((12, 14, 18))
-        surface.blit(backdrop, (0, 0))
+        # Illustrated noir title card, with a desk lamp pool and the detective as a visual anchor.
+        surface.fill((9, 12, 17))
+        for x in range(0, SCREEN_WIDTH, 48):
+            pygame.draw.line(surface, (13, 17, 23), (x, 0), (x, SCREEN_HEIGHT), 1)
+        for y in range(0, SCREEN_HEIGHT, 48):
+            pygame.draw.line(surface, (13, 17, 23), (0, y), (SCREEN_WIDTH, y), 1)
+        glow = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        for radius, alpha in ((230, 7), (165, 10), (95, 14)):
+            pygame.draw.circle(glow, (224, 174, 83, alpha), (SCREEN_WIDTH - 145, 215), radius)
+        surface.blit(glow, (0, 0))
 
-        # Ambient vignette lines
-        for y in range(0, SCREEN_HEIGHT, 8):
-            pygame.draw.line(surface, (8, 10, 14), (0, y), (SCREEN_WIDTH, y), 1)
+        # Rain-lit window and warm desk silhouette frame the title without competing with it.
+        pygame.draw.rect(surface, (18, 27, 37), (58, 54, 210, 142), border_radius=4)
+        pygame.draw.rect(surface, (93, 126, 145), (58, 54, 210, 142), 2, border_radius=4)
+        for x in range(72, 260, 22):
+            pygame.draw.line(surface, (50, 78, 94), (x, 60), (x - 34, 190), 1)
+        pygame.draw.line(surface, (93, 126, 145), (163, 57), (163, 193), 3)
+        pygame.draw.line(surface, (93, 126, 145), (61, 124), (265, 124), 3)
+        pygame.draw.rect(surface, (47, 32, 24), (0, 540, SCREEN_WIDTH, 100))
+        pygame.draw.line(surface, (119, 83, 47), (0, 540), (SCREEN_WIDTH, 540), 2)
+        for y in range(557, 640, 24):
+            pygame.draw.line(surface, (63, 45, 33), (0, y), (SCREEN_WIDTH, y), 1)
+        pygame.draw.ellipse(surface, (5, 7, 10), (SCREEN_WIDTH - 285, 503, 225, 34))
+        surface.blit(self.detective, (SCREEN_WIDTH - 240, 420))
+        pygame.draw.rect(surface, (49, 33, 24), (SCREEN_WIDTH - 332, 485, 200, 18), border_radius=4)
+        pygame.draw.rect(surface, (150, 108, 57), (SCREEN_WIDTH - 332, 485, 200, 18), 1, border_radius=4)
+        pygame.draw.line(surface, (224, 182, 90), (SCREEN_WIDTH - 205, 485), (SCREEN_WIDTH - 182, 409), 3)
+        pygame.draw.circle(surface, (255, 220, 132), (SCREEN_WIDTH - 181, 404), 9)
 
-        # Header Title
-        title_y = 70
-        shadow_txt = self.font_logo.render("CASE UNKNOWN", True, (10, 10, 12))
-        surface.blit(shadow_txt, ((SCREEN_WIDTH - shadow_txt.get_width()) // 2 + 2, title_y + 2))
-
+        # Title lockup
+        title_x, title_y = 315, 58
+        kicker = self.font_kicker.render("PRECINCT 13  /  CASE FILE 001", True, (126, 160, 174))
+        surface.blit(kicker, (title_x + 4, title_y))
+        shadow_txt = self.font_logo.render("CASE UNKNOWN", True, (5, 7, 9))
         logo_txt = self.font_logo.render("CASE UNKNOWN", True, (240, 210, 145))
-        surface.blit(logo_txt, ((SCREEN_WIDTH - logo_txt.get_width()) // 2, title_y))
-
-        sub_txt = self.font_sublogo.render("Precinct 13 — The Midnight Syndicate Mystery", True, (170, 145, 105))
-        surface.blit(sub_txt, ((SCREEN_WIDTH - sub_txt.get_width()) // 2, title_y + 46))
-
-        # Divider line
-        div_y = title_y + 80
-        pygame.draw.line(surface, UI_PANEL_BORDER, (SCREEN_WIDTH // 2 - 220, div_y), (SCREEN_WIDTH // 2 + 220, div_y), 1)
-        pygame.draw.circle(surface, UI_ACCENT_GOLD, (SCREEN_WIDTH // 2, div_y), 4)
+        surface.blit(shadow_txt, (title_x + 6, title_y + 28))
+        surface.blit(logo_txt, (title_x + 3, title_y + 25))
+        sub_txt = self.font_sublogo.render("The Midnight Syndicate Mystery", True, (170, 145, 105))
+        surface.blit(sub_txt, (title_x + 6, title_y + 70))
+        div_y = title_y + 100
+        pygame.draw.line(surface, (78, 71, 55), (title_x + 4, div_y), (SCREEN_WIDTH - 72, div_y), 1)
+        pygame.draw.circle(surface, UI_ACCENT_GOLD, (title_x + 4, div_y), 3)
 
         if self.current_screen == "MAIN":
             self._draw_main_menu(surface, has_active_game)
@@ -170,6 +191,16 @@ class MenuSystem:
 
     def _draw_main_menu(self, surface: pygame.Surface, has_active_game: bool):
         mpos = pygame.mouse.get_pos()
+
+        menu_panel = pygame.Surface((388, 382), pygame.SRCALPHA)
+        menu_panel.fill((10, 14, 20, 218))
+        panel_rect = menu_panel.get_rect(center=(SCREEN_WIDTH // 2, 401))
+        surface.blit(menu_panel, panel_rect)
+        pygame.draw.rect(surface, (63, 69, 72), panel_rect, 1, border_radius=8)
+        pygame.draw.line(surface, (178, 142, 79), (panel_rect.x + 18, panel_rect.y + 14),
+                         (panel_rect.x + 70, panel_rect.y + 14), 2)
+        section_label = self.font_kicker.render("INVESTIGATION DESK", True, (127, 151, 160))
+        surface.blit(section_label, (panel_rect.x + 18, panel_rect.y + 21))
 
         for i, opt in enumerate(self.menu_options):
             rect = self.btn_rects[i]
@@ -194,6 +225,11 @@ class MenuSystem:
 
             pygame.draw.rect(surface, bg_col, rect, border_radius=6)
             pygame.draw.rect(surface, border_col, rect, 2 if (is_selected or is_hover) else 1, border_radius=6)
+
+            # Fine inset edge and quiet brass rail give the controls a tactile dossier feel.
+            if not is_disabled:
+                pygame.draw.line(surface, (75, 66, 49) if not (is_selected or is_hover) else (186, 148, 81),
+                                 (rect.left + 10, rect.bottom - 3), (rect.right - 10, rect.bottom - 3), 1)
 
             # Left selection indicator
             if is_selected and not is_disabled:
