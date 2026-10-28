@@ -727,6 +727,15 @@ SVG_EVIDENCE_MARKER = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44
 <path d="m20 21 4-3v14m-5 0h10" fill="none" stroke="#30291e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>"""
 
+SVG_RAILWAY_PAINTING = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 82" width="132" height="82">
+<rect x="2" y="2" width="128" height="78" rx="2" fill="#33271c" stroke="#b18a50" stroke-width="3"/>
+<rect x="8" y="8" width="116" height="66" fill="#65706b" stroke="#1b211f" stroke-width="2"/>
+<path d="M9 50 36 27l20 18 19-24 47 31v21H9z" fill="#424c48"/>
+<path d="M9 57q28-12 52-2t63-1v20H9z" fill="#77715a"/>
+<path d="M15 65h104M26 55l-7 18m28-16-5 16m31-14v14m26-18 5 18" stroke="#d0bd8e" stroke-width="2" opacity=".82"/>
+<g fill="#f1d59c" font-family="serif" font-size="10" font-weight="bold"><text x="20" y="48">4</text><text x="63" y="45">1</text><text x="103" y="48">7</text></g>
+</svg>"""
+
 
 def get_room_objects() -> dict:
     """Renders and returns all cached Pygame surfaces for the room furniture."""
@@ -756,5 +765,6 @@ def get_room_objects() -> dict:
         'acoustic_panel': render_svg(SVG_ACOUSTIC_PANEL, 100, 62),
         'directorate_seal': render_svg(SVG_DIRECTORATE_SEAL, 96, 82),
         'evidence_marker': render_svg(SVG_EVIDENCE_MARKER, 44, 48),
+        'painting': render_svg(SVG_RAILWAY_PAINTING, 132, 82),
     }
 

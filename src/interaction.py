@@ -47,6 +47,7 @@ class Interactable:
         full_text: str = "",
         is_treasure: bool = False,
         treasure_id: str = "",
+        key_id: str = "",
     ):
         self.obj_id = obj_id
         self.name = name
@@ -58,6 +59,7 @@ class Interactable:
         self.full_text = full_text
         self.is_treasure = is_treasure
         self.treasure_id = treasure_id
+        self.key_id = key_id
 
 
 class InteractionManager:
@@ -106,6 +108,7 @@ class InteractionManager:
         full_text: str = "",
         is_treasure: bool = False,
         treasure_id: str = "",
+        key_id: str = "",
     ):
         self.interactables.append(
             Interactable(
@@ -119,6 +122,7 @@ class InteractionManager:
                 full_text=full_text,
                 is_treasure=is_treasure,
                 treasure_id=treasure_id,
+                key_id=key_id,
             )
         )
 
@@ -153,6 +157,12 @@ class InteractionManager:
                     self.is_inspecting = False
                     return True
                 elif self.active_object is not None:
+                    if self.active_object.key_id and self.evidence_manager:
+                        if self.evidence_manager.collect_key(self.active_object.key_id):
+                            self.evidence_manager._queue_toast(
+                                "KEY FOUND", "A hidden key has been added to your inventory."
+                            )
+
                     # Backward compatibility for legacy puzzle triggers if any
                     if self.active_object.is_treasure and self.treasure_manager is not None:
                         t_id = self.active_object.treasure_id or self.active_object.obj_id

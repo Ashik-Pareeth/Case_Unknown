@@ -508,7 +508,8 @@ ROOMS_DATA = {
                 "target_pos": (140, 350),
                 "label": "East Hallway -> Records Archive",
                 "gate_id": "door_crime_scene_to_records",
-                "gate_msg": "Passage Restricted: Examine and record the primary crime scene evidence before leaving.",
+                "key_id": "records_room_key",
+                "gate_msg": "This door needs a key. Search the crime scene carefully.",
             },
         ],
         "wall_decor": [
@@ -579,6 +580,16 @@ ROOMS_DATA = {
         ],
         "interactables": [
             {
+                "id": "hidden_records_key",
+                "name": "Brass Passage Key",
+                "description": "You find a brass key tucked beneath a loose floorboard near the study desk. It may fit the east passage door.",
+                "trigger_rect": (610, 390, 64, 45),
+                "badge_pos": (642, 404),
+                "obj_type": "examinable",
+                "key_id": "records_room_key",
+                "full_text": "A small brass key, hidden beneath a loose floorboard. The tag reads: EAST RECORDS PASSAGE.",
+            },
+            {
                 "id": "shattered_watch",
                 "name": "Shattered Pocket Chronometer",
                 "description": "A heavy gold pocket watch dropped beneath the desk edge. Hands are stopped abruptly at 22:15.",
@@ -636,11 +647,14 @@ ROOMS_DATA = {
                 "target_room": "recording_room",
                 "target_pos": (140, 350),
                 "label": "East Hallway -> Audio Recording Room",
-                "gate_id": "door_records_to_recording",
-                "gate_msg": "Audio Room Locked: Discover and record the altered dispatch ledger first.",
+                "gate_id": "door_records_to_recording_keypad",
+                "pin_code": [4, 1, 7],
+                "gate_msg": "The keypad needs a three-digit code.",
+                "door_hint": "Look at the railway painting on the wall. Read the three mile markers from left to right.",
             },
         ],
         "wall_decor": [
+            {"prop": "painting", "pos": (610, 18)},
             {"prop": "sconce", "pos": (470, 35)},
             {"prop": "evidence_board", "pos": (395, 20)},
         ],
@@ -683,7 +697,17 @@ ROOMS_DATA = {
                 "obj_type": "examinable",
             },
         ],
-        "interactables": [],
+        "interactables": [
+            {
+                "id": "railway_painting",
+                "name": "Railway Painting",
+                "description": "A faded railway landscape hangs over the records cabinets. Three mile markers are painted along the track.",
+                "trigger_rect": (606, 88, 128, 76),
+                "badge_pos": (670, 102),
+                "obj_type": "examinable",
+                "full_text": "The railway markers read 4, 1, 7 from left to right. The records room keypad likely uses these numbers.",
+            },
+        ],
     },
 
     # Room 3: The Recording Room
@@ -718,8 +742,6 @@ ROOMS_DATA = {
                 "target_room": "restricted_office",
                 "target_pos": (140, 350),
                 "label": "East Passage -> Restricted Office",
-                "gate_id": "door_recording_to_restricted",
-                "gate_msg": "Restricted Office Restricted: Listen to Hale's tape recording first.",
             },
         ],
         "wall_decor": [

@@ -81,6 +81,7 @@ class EvidenceManager:
         self.questions: list[InvestigationQuestion] = []
         self.connections: list[EvidenceConnection] = []
         self.unlocked_gates: set[str] = set()
+        self.found_keys: set[str] = set()
 
         # Toast notification system
         self.active_toast: JournalToast | None = None
@@ -280,34 +281,22 @@ class EvidenceManager:
                 if all(self.is_recorded(e_id) for e_id in q.required_evidence):
                     q.resolved = True
 
-        # Check gates (§2.3 - Room access unlocked through discoveries)
-        if self.is_recorded("hale_autopsy_report"):
-            if "door_crime_scene_to_records" not in self.unlocked_gates:
-                self.unlocked_gates.add("door_crime_scene_to_records")
-                self._queue_toast(
-                    title="PASSAGE UNLOCKED",
-                    subtitle="Records Room is now accessible",
-                )
-
-        if self.is_recorded("altered_archive_ledger"):
-            if "door_records_to_recording" not in self.unlocked_gates:
-                self.unlocked_gates.add("door_records_to_recording")
-                self._queue_toast(
-                    title="PASSAGE UNLOCKED",
-                    subtitle="Audio Archive Room is now accessible",
-                )
-
-        if self.is_recorded("hale_magnetic_tape"):
-            if "door_recording_to_restricted" not in self.unlocked_gates:
-                self.unlocked_gates.add("door_recording_to_restricted")
-                self._queue_toast(
-                    title="PASSAGE UNLOCKED",
-                    subtitle="Restricted Office is now accessible",
-                )
+        # Passage access is earned by finding keys and solving door mechanisms,
+        # rather than by recording evidence.
 
     def is_gate_unlocked(self, gate_id: str) -> bool:
         """Returns True if the world progression gate is open."""
         return gate_id in self.unlocked_gates
+
+    def collect_key(self, key_id: str) -> bool:
+        """Record a discovered key and return whether it was newly found."""
+        if key_id in self.found_keys:
+            return False
+        self.found_keys.add(key_id)
+        return True
+
+    def has_key(self, key_id: str) -> bool:
+        return key_id in self.found_keys
 
     def get_recorded_items(self) -> list[EvidenceItem]:
         """Returns all evidence items that have been added to the journal."""
@@ -395,6 +384,7 @@ class EvidenceManager:
                 if item.state != STATE_UNDISCOVERED
             },
             "unlocked_gates": list(self.unlocked_gates),
+            "found_keys": list(self.found_keys),
             "connections": [c.id for c in self.connections if c.discovered],
         }
 
@@ -406,6 +396,7 @@ class EvidenceManager:
                 self.evidence_db[item_id].state = state
 
         self.unlocked_gates = set(data.get("unlocked_gates", []))
+        self.found_keys = set(data.get("found_keys", []))
         discovered_conns = set(data.get("connections", []))
         for c in self.connections:
             if c.id in discovered_conns:

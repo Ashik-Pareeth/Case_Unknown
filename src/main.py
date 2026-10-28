@@ -47,6 +47,7 @@ from src.evidence_manager import EvidenceManager
 from src.journal_view import JournalView
 from src.save_manager import SaveManager
 from src.evidence_reveal import EvidenceRevealModal
+from src.puzzles import NumberLockPuzzle
 
 
 def main():
@@ -88,6 +89,11 @@ def main():
 
     active_puzzle = None
     active_treasure_id = None
+    active_door_gate_id = None
+    active_door_wall = None
+    door_hints_shown = set()
+    pending_passage_notice = None
+    passage_notice_idle = 0.0
     active_reveal = None
     game_state = STATE_MENU
 
@@ -164,8 +170,27 @@ def main():
                 if active_puzzle:
                     active_puzzle.handle_event(event)
                     if active_puzzle.is_closed:
+                        if active_door_gate_id:
+                            if active_door_wall == "right":
+                                player.pos.x -= 28
+                            elif active_door_wall == "left":
+                                player.pos.x += 28
+                            elif active_door_wall == "top":
+                                player.pos.y += 28
+                            elif active_door_wall == "bottom":
+                                player.pos.y -= 28
+                            player.update_rects()
+                        active_door_gate_id = None
+                        active_door_wall = None
                         active_puzzle = None
                         active_treasure_id = None
+                        game_state = STATE_PLAYING
+                    elif active_puzzle.is_solved and active_door_gate_id:
+                        evidence_mgr.unlocked_gates.add(active_door_gate_id)
+                        evidence_mgr._queue_toast("PASSAGE UNLOCKED", "The keypad clicks open.")
+                        active_door_gate_id = None
+                        active_door_wall = None
+                        active_puzzle = None
                         game_state = STATE_PLAYING
                     elif active_puzzle.is_solved and active_treasure_id:
                         treasure_mgr.unlock_treasure(active_treasure_id)
@@ -252,30 +277,56 @@ def main():
             player.update(delta_time, room.solid_objects)
             interaction_mgr.update(delta_time, player.get_interaction_reach())
 
-            # Check Doorway transitions with Progression Gate checks (§2.3, §7)
+            # Door locks use found keys and keypad codes. Delay a blocked-door
+            # notice until one second after the player stops trying.
             door = room.check_door_transitions(player.hitbox)
-            if door:
-                if door.get("blocked"):
-                    msg = door["door"].get("gate_msg", "Passage restricted: investigate clues before proceeding.")
-                    evidence_mgr._queue_toast("PASSAGE RESTRICTED", msg)
-                    wall = door["door"]["wall"]
-                    if wall == "right":
-                        player.pos.x -= 16
-                    elif wall == "left":
-                        player.pos.x += 16
-                    elif wall == "top":
-                        player.pos.y += 16
-                    elif wall == "bottom":
-                        player.pos.y -= 16
-                    player.update_rects()
-                else:
-                    current_room_id = door["target_room"]
-                    visited_rooms.add(current_room_id)
-                    player.pos = pygame.Vector2(*door["target_pos"])
-                    player.update_rects()
-                    target_data = ROOMS_DATA.get(current_room_id, ROOMS_DATA["crime_scene"])
-                    room = Room(interaction_mgr, current_room_id, target_data, treasure_mgr, evidence_mgr=evidence_mgr)
-                    save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
+            if door and door.get("door_code"):
+                locked_door = door["door"]
+                active_door_gate_id = locked_door["gate_id"]
+                active_door_wall = locked_door["wall"]
+                active_puzzle = NumberLockPuzzle(
+                    title="East Passage Keypad",
+                    target_code=locked_door["pin_code"],
+                    hint=locked_door.get("door_hint", "Examine the room for a clue."),
+                    reward_name="Recording Room Access",
+                )
+                if active_door_gate_id not in door_hints_shown:
+                    evidence_mgr._queue_toast(
+                        "KEYPAD LOCKED",
+                        "The keypad needs a code. Press H for a hint.",
+                    )
+                    door_hints_shown.add(active_door_gate_id)
+                pending_passage_notice = None
+                game_state = STATE_PUZZLE
+            elif door and door.get("blocked"):
+                msg = door["door"].get("gate_msg", "This passage is locked.")
+                pending_passage_notice = ("PASSAGE RESTRICTED", msg)
+                passage_notice_idle = 0.0
+                wall = door["door"]["wall"]
+                if wall == "right":
+                    player.pos.x -= 16
+                elif wall == "left":
+                    player.pos.x += 16
+                elif wall == "top":
+                    player.pos.y += 16
+                elif wall == "bottom":
+                    player.pos.y -= 16
+                player.update_rects()
+            elif door:
+                pending_passage_notice = None
+                current_room_id = door["target_room"]
+                visited_rooms.add(current_room_id)
+                player.pos = pygame.Vector2(*door["target_pos"])
+                player.update_rects()
+                target_data = ROOMS_DATA.get(current_room_id, ROOMS_DATA["crime_scene"])
+                room = Room(interaction_mgr, current_room_id, target_data, treasure_mgr, evidence_mgr=evidence_mgr)
+                save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
+            elif pending_passage_notice:
+                passage_notice_idle += delta_time
+                if passage_notice_idle >= 1.0:
+                    title, msg = pending_passage_notice
+                    evidence_mgr._queue_toast(title, msg)
+                    pending_passage_notice = None
 
         # =============================================================
         # 3. RENDERING

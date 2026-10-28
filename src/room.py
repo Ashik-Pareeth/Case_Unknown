@@ -124,6 +124,9 @@ class Room:
                 "label": door.get("label", "North Door"),
                 "gate_id": door.get("gate_id", ""),
                 "gate_msg": door.get("gate_msg", ""),
+                "key_id": door.get("key_id", ""),
+                "pin_code": door.get("pin_code"),
+                "door_hint": door.get("door_hint", ""),
             })
         else:
             self.solid_objects.append(
@@ -153,6 +156,9 @@ class Room:
                 "label": door.get("label", "South Door"),
                 "gate_id": door.get("gate_id", ""),
                 "gate_msg": door.get("gate_msg", ""),
+                "key_id": door.get("key_id", ""),
+                "pin_code": door.get("pin_code"),
+                "door_hint": door.get("door_hint", ""),
             })
         else:
             self.solid_objects.append(
@@ -181,6 +187,9 @@ class Room:
                 "label": door.get("label", "West Door"),
                 "gate_id": door.get("gate_id", ""),
                 "gate_msg": door.get("gate_msg", ""),
+                "key_id": door.get("key_id", ""),
+                "pin_code": door.get("pin_code"),
+                "door_hint": door.get("door_hint", ""),
             })
         else:
             self.solid_objects.append(
@@ -210,6 +219,9 @@ class Room:
                 "label": door.get("label", "East Door"),
                 "gate_id": door.get("gate_id", ""),
                 "gate_msg": door.get("gate_msg", ""),
+                "key_id": door.get("key_id", ""),
+                "pin_code": door.get("pin_code"),
+                "door_hint": door.get("door_hint", ""),
             })
         else:
             self.solid_objects.append(
@@ -270,6 +282,7 @@ class Room:
                     full_text=f.get("full_text", ""),
                     is_treasure=is_treasure,
                     treasure_id=treasure_id,
+                    key_id=f.get("key_id", ""),
                 )
 
         # 4. Standalone Environmental Interactables
@@ -283,6 +296,7 @@ class Room:
                 obj_type=inter.get("obj_type", TYPE_EXAMINABLE),
                 evidence_id=inter.get("evidence_id", ""),
                 full_text=inter.get("full_text", ""),
+                key_id=inter.get("key_id", ""),
             )
 
     def check_door_transitions(self, player_hitbox: pygame.Rect) -> dict | None:
@@ -290,7 +304,12 @@ class Room:
         for d in self.doorways:
             if player_hitbox.colliderect(d["trigger_rect"]):
                 gate_id = d.get("gate_id")
-                if gate_id and self.evidence_mgr and not self.evidence_mgr.is_gate_unlocked(gate_id):
+                key_id = d.get("key_id")
+                if key_id and self.evidence_mgr and not self.evidence_mgr.has_key(key_id):
+                    return {"blocked": True, "door": d}
+                if gate_id and d.get("pin_code") and self.evidence_mgr and not self.evidence_mgr.is_gate_unlocked(gate_id):
+                    return {"door_code": True, "door": d}
+                if gate_id and not key_id and self.evidence_mgr and not self.evidence_mgr.is_gate_unlocked(gate_id):
                     return {"blocked": True, "door": d}
                 return d
         return None
