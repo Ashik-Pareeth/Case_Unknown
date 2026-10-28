@@ -9,6 +9,7 @@ Provides:
 """
 
 import math
+from pathlib import Path
 import pygame
 from src.settings import (
     SCREEN_WIDTH,
@@ -25,7 +26,6 @@ from src.settings import (
 from typing import Optional
 from src.treasure import TreasureManager
 from src.experience import ExperienceManager  # accepted for compatibility with older callers
-from assets.svg_assets import get_character_animations
 
 
 class MenuSystem:
@@ -48,7 +48,10 @@ class MenuSystem:
         self.font_card_body = pygame.font.SysFont("segoeui", 12)
         self.font_card_sub = pygame.font.SysFont("segoeui", 11, italic=True)
         self.font_kicker = pygame.font.SysFont("segoeui", 10, bold=True)
-        self.detective = get_character_animations()["down"]["idle"][0]
+        portrait_path = Path(__file__).resolve().parent.parent / "assets" / "legacy_character" / "portraits" / "detective_portrait_v1.png"
+        self.detective_portrait = pygame.transform.smoothscale(
+            pygame.image.load(str(portrait_path)), (240, 293)
+        )
 
         # Main Menu Options
         self.menu_options = [
@@ -172,8 +175,8 @@ class MenuSystem:
         pygame.draw.line(surface, (119, 83, 47), (0, 540), (SCREEN_WIDTH, 540), 2)
         for y in range(557, 640, 24):
             pygame.draw.line(surface, (63, 45, 33), (0, y), (SCREEN_WIDTH, y), 1)
-        pygame.draw.ellipse(surface, (5, 7, 10), (SCREEN_WIDTH - 285, 503, 225, 34))
-        surface.blit(self.detective, (SCREEN_WIDTH - 240, 420))
+        pygame.draw.ellipse(surface, (5, 7, 10), (SCREEN_WIDTH - 296, 510, 235, 34))
+        surface.blit(self.detective_portrait, (SCREEN_WIDTH - 286, 221))
         pygame.draw.rect(surface, (49, 33, 24), (SCREEN_WIDTH - 332, 485, 200, 18), border_radius=4)
         pygame.draw.rect(surface, (150, 108, 57), (SCREEN_WIDTH - 332, 485, 200, 18), 1, border_radius=4)
         pygame.draw.line(surface, (224, 182, 90), (SCREEN_WIDTH - 205, 485), (SCREEN_WIDTH - 182, 409), 3)
