@@ -25,7 +25,7 @@ PLAYER_SPRITE_WIDTH = 52
 PLAYER_SPRITE_HEIGHT = 68
 
 # Animation settings
-WALK_ANIM_SPEED = 0.13  # Seconds per frame in walk cycle
+WALK_ANIM_SPEED = 0.18  # Seconds per frame in the authored four-frame walk cycle
 IDLE_ANIM_SPEED = 0.50  # Seconds per frame in subtle idle cycle
 
 # Color Palette (Atmospheric Noir)
