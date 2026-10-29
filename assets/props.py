@@ -565,28 +565,174 @@ SVG_PRISON_BARS = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 12
   <circle cx="84" cy="60" r="2" fill="#201806"/>
 </svg>"""
 
+
 SVG_INTERROGATION_TABLE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 110" width="160" height="110">
   <defs>
-    <linearGradient id="intTableTop" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#4d535e"/>
-      <stop offset="100%" stop-color="#2a2e35"/>
+    <linearGradient id="itWood" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#70513b"/>
+      <stop offset="0.42" stop-color="#513a2b"/>
+      <stop offset="1" stop-color="#34271f"/>
     </linearGradient>
+
+    <linearGradient id="itEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#49372a"/>
+      <stop offset="0.5" stop-color="#292b2c"/>
+      <stop offset="1" stop-color="#171b1e"/>
+    </linearGradient>
+
+    <linearGradient id="itMetal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#252b30"/>
+      <stop offset="0.45" stop-color="#596067"/>
+      <stop offset="0.7" stop-color="#353b41"/>
+      <stop offset="1" stop-color="#1c2227"/>
+    </linearGradient>
+
+    <linearGradient id="itLeg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#171b1f"/>
+      <stop offset="0.45" stop-color="#3c4247"/>
+      <stop offset="1" stop-color="#191e22"/>
+    </linearGradient>
+
+    <linearGradient id="itDevice" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#41474b"/>
+      <stop offset="1" stop-color="#202528"/>
+    </linearGradient>
+
+    <clipPath id="itTopClip">
+      <polygon points="16,35 129,35 148,57 34,57"/>
+    </clipPath>
   </defs>
-  <ellipse cx="80" cy="94" rx="70" ry="12" fill="#000000" opacity="0.45"/>
-  <rect x="12" y="48" width="16" height="38" rx="2" fill="#242830"/>
-  <polygon points="8,48 32,48 28,38 12,38" fill="#3b424d"/>
-  <rect x="132" y="48" width="16" height="38" rx="2" fill="#242830"/>
-  <polygon points="128,48 152,48 148,38 132,38" fill="#3b424d"/>
-  <rect x="42" y="52" width="8" height="42" fill="#262b32"/>
-  <rect x="110" y="52" width="8" height="42" fill="#262b32"/>
-  <polygon points="32,52 128,52 120,24 40,24" fill="url(#intTableTop)" stroke="#1a1d22" stroke-width="1.5"/>
-  <rect x="64" y="28" width="32" height="18" rx="2" fill="#1b1d20" stroke="#dfb15b" stroke-width="0.8"/>
-  <circle cx="72" cy="37" r="4" fill="#88929b"/>
-  <circle cx="88" cy="37" r="4" fill="#88929b"/>
-  <circle cx="72" cy="37" r="1.5" fill="#1a1c1e"/>
-  <circle cx="88" cy="37" r="1.5" fill="#1a1c1e"/>
-  <circle cx="92" cy="31" r="1.5" fill="#e53935"/>
+
+  <!-- Ground shadow -->
+  <ellipse cx="81" cy="88" rx="65" ry="12"
+           fill="#080a0c" opacity=".28"/>
+
+  <!-- Rear support frame -->
+  <path d="M30 48 L133 48 L138 55 L35 55 Z"
+        fill="#171b1e"/>
+  <path d="M37 51 L127 51"
+        fill="none" stroke="#697078" stroke-width=".8"
+        opacity=".5"/>
+
+  <!-- Four sturdy steel legs -->
+  <path d="M26 52 L43 52 L42 83 L25 83 Z"
+        fill="url(#itLeg)" stroke="#171b1e" stroke-width="1"/>
+  <path d="M119 52 L136 52 L141 82 L124 82 Z"
+        fill="url(#itLeg)" stroke="#171b1e" stroke-width="1"/>
+
+  <!-- Front pair, visible below the tabletop -->
+  <path d="M43 57 L53 57 L51 91 L40 91 Z"
+        fill="url(#itLeg)" stroke="#15191c" stroke-width="1"/>
+  <path d="M105 57 L115 57 L120 91 L109 91 Z"
+        fill="url(#itLeg)" stroke="#15191c" stroke-width="1"/>
+
+  <!-- Leg highlights -->
+  <path d="M29 56 L32 56 L31 78"
+        fill="none" stroke="#697078" stroke-width="1"
+        opacity=".5"/>
+  <path d="M123 56 L126 56 L132 77"
+        fill="none" stroke="#697078" stroke-width="1"
+        opacity=".45"/>
+  <path d="M44 61 L46 61 L44 86"
+        fill="none" stroke="#727980" stroke-width=".8"
+        opacity=".45"/>
+  <path d="M109 61 L111 61 L115 86"
+        fill="none" stroke="#727980" stroke-width=".8"
+        opacity=".45"/>
+
+  <!-- Floor-facing feet -->
+  <path d="M23 81 L43 81 L43 86 L22 86 Z"
+        fill="#24292d" stroke="#141719" stroke-width=".8"/>
+  <path d="M123 80 L143 80 L144 85 L124 85 Z"
+        fill="#24292d" stroke="#141719" stroke-width=".8"/>
+  <path d="M38 89 L53 89 L53 93 L37 93 Z"
+        fill="#24292d" stroke="#141719" stroke-width=".8"/>
+  <path d="M108 89 L122 89 L123 93 L108 93 Z"
+        fill="#24292d" stroke="#141719" stroke-width=".8"/>
+
+  <!-- Thick tabletop edge -->
+  <polygon points="12,34 127,34 151,56 35,56"
+           fill="url(#itEdge)" stroke="#17191b"
+           stroke-width="1.5"/>
+
+  <!-- Wooden top -->
+  <polygon points="16,30 125,30 146,53 36,53"
+           fill="url(#itWood)" stroke="#8a6747"
+           stroke-width="1"/>
+
+  <!-- Wood grain -->
+  <g clip-path="url(#itTopClip)" fill="none"
+     stroke-linecap="round">
+    <path d="M13 35 Q50 33 88 37 T153 39"
+          stroke="#bd9365" stroke-width=".9" opacity=".55"/>
+    <path d="M20 42 Q55 39 91 43 T149 45"
+          stroke="#241a14" stroke-width="1.3" opacity=".65"/>
+    <path d="M29 48 Q64 45 102 49 T147 50"
+          stroke="#a47b52" stroke-width=".8" opacity=".6"/>
+    <path d="M43 32 Q68 34 92 32"
+          stroke="#d0a477" stroke-width=".7" opacity=".4"/>
+    <path d="M50 37 Q75 35 103 39"
+          stroke="#2b2019" stroke-width=".8" opacity=".6"/>
+    <path d="M45 51 L61 50 M112 43 L129 44"
+          stroke="#d0a477" stroke-width=".8" opacity=".45"/>
+  </g>
+
+  <!-- Beveled metal rim -->
+  <path d="M13 34 L127 34 L151 56"
+        fill="none" stroke="#a1a4a2" stroke-width="1"
+        opacity=".65"/>
+  <path d="M35 56 L151 56"
+        fill="none" stroke="#111619" stroke-width="1.5"/>
+
+  <!-- Reinforced corner plates -->
+  <path d="M17 31 L28 31 L37 40 L27 40 Z"
+        fill="url(#itMetal)" stroke="#171c20" stroke-width=".7"/>
+  <path d="M124 31 L131 34 L141 45 L133 42 Z"
+        fill="url(#itMetal)" stroke="#171c20" stroke-width=".7"/>
+
+  <!-- Small recessed evidence / recording unit -->
+  <path d="M70 35 L94 35 L101 42 L77 42 Z"
+        fill="#241f1b" stroke="#171513" stroke-width="1"/>
+  <path d="M73 35.8 L93 35.8 L97 40.5 L77 40.5 Z"
+        fill="url(#itDevice)" stroke="#6c6254" stroke-width=".6"/>
+
+  <!-- Recording grille -->
+  <g stroke="#858780" stroke-width=".65" opacity=".8">
+    <path d="M79 37.2 L91 37.2"/>
+    <path d="M80 38.6 L92 38.6"/>
+    <path d="M81 40 L93 40"/>
+  </g>
+
+  <!-- Single restrained status indicator -->
+  <circle cx="95" cy="37" r="1.15" fill="#a64c3e"/>
+  <circle cx="95" cy="37" r=".45" fill="#e78a69"/>
+
+  <!-- Fasteners -->
+  <g fill="#9a9b95" stroke="#292c2e" stroke-width=".45">
+    <circle cx="24" cy="35" r="1.15"/>
+    <circle cx="130" cy="36" r="1.15"/>
+    <circle cx="39" cy="51" r="1.05"/>
+    <circle cx="143" cy="53" r="1.05"/>
+  </g>
+  <g stroke="#35383a" stroke-width=".5">
+    <path d="M23 35 L25 35"/>
+    <path d="M129 36 L131 36"/>
+    <path d="M38 51 L40 51"/>
+    <path d="M142 53 L144 53"/>
+  </g>
+
+  <!-- Small worn patches on the wood -->
+  <path d="M46 39 L53 38 M56 46 L62 45
+           M109 34 L114 35"
+        fill="none" stroke="#d2aa7c" stroke-width=".65"
+        opacity=".55"/>
+
+  <!-- Subtle front-edge wear -->
+  <path d="M38 54 L76 54 M87 54 L119 54"
+        fill="none" stroke="#9b7956" stroke-width=".65"
+        opacity=".6"/>
 </svg>"""
+
 
 SVG_TREASURE_CHEST = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 64" width="74" height="64">
   <defs>
