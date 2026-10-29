@@ -71,6 +71,7 @@ class JournalToast:
     subtitle: str
     timer: float = 3.6
     max_duration: float = 3.6
+    elapsed: float = 0.0
 
 
 class EvidenceManager:
@@ -313,16 +314,45 @@ class EvidenceManager:
         """Returns investigative leads."""
         return self.questions
 
-    def _queue_toast(self, title: str, subtitle: str):
-        toast = JournalToast(title=title, subtitle=subtitle)
+    def _queue_toast(self, title: str, subtitle: str, duration: float = 3.6):
+        toast = JournalToast(title=title, subtitle=subtitle, timer=duration, max_duration=duration)
         if self.active_toast is None:
             self.active_toast = toast
         else:
             self.toast_queue.append(toast)
 
+    def show_or_extend_toast(self, title: str, subtitle: str, duration: float = 1.2):
+        """Show a toast now, or extend its current/queued lifetime without stacking it."""
+        if self.active_toast and self.active_toast.title == title:
+            self.active_toast.subtitle = subtitle
+            self.active_toast.max_duration = duration
+            self.active_toast.timer = duration
+            self.toast_queue = [toast for toast in self.toast_queue if toast.title != title]
+            return
+
+        matching_queued = next((toast for toast in self.toast_queue if toast.title == title), None)
+        if matching_queued:
+            matching_queued.subtitle = subtitle
+            matching_queued.max_duration = duration
+            matching_queued.timer = duration
+            kept_matching_toast = False
+            deduplicated_queue = []
+            for toast in self.toast_queue:
+                if toast.title == title:
+                    if not kept_matching_toast:
+                        deduplicated_queue.append(toast)
+                        kept_matching_toast = True
+                else:
+                    deduplicated_queue.append(toast)
+            self.toast_queue = deduplicated_queue
+            return
+
+        self._queue_toast(title, subtitle, duration)
+
     def update(self, dt: float):
         """Updates toast notification animations."""
         if self.active_toast:
+            self.active_toast.elapsed += dt
             self.active_toast.timer -= dt
             if self.active_toast.timer <= 0:
                 if self.toast_queue:
@@ -336,7 +366,7 @@ class EvidenceManager:
             return
 
         toast = self.active_toast
-        elapsed = toast.max_duration - toast.timer
+        elapsed = toast.elapsed
         alpha = 255
         if elapsed < 0.35:
             alpha = int((elapsed / 0.35) * 255)

@@ -242,6 +242,8 @@ class Room:
                 surf = self.assets[prop_key]
                 rect = surf.get_rect(topleft=item["pos"])
                 self.floor_decor.append({"surface": surf, "rect": rect})
+                if item.get("hitbox"):
+                    self.solid_objects.append(pygame.Rect(*item["hitbox"]))
 
         # 2. Wall Decor (Windows, Evidence Board, Sconces)
         for item in self.data.get("wall_decor", []):

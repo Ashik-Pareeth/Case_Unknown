@@ -736,6 +736,26 @@ SVG_RAILWAY_PAINTING = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1
 <g fill="#f1d59c" font-family="serif" font-size="10" font-weight="bold"><text x="20" y="48">4</text><text x="63" y="45">1</text><text x="103" y="48">7</text></g>
 </svg>"""
 
+SVG_KEYHOLE_DOOR = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 96" width="32" height="96">
+<rect x="1" y="1" width="30" height="94" fill="#493020" stroke="#c39a58" stroke-width="2"/>
+<rect x="4" y="4" width="24" height="88" fill="#63432d" stroke="#211b17" stroke-width="1.5"/>
+<path d="M8 7v82m6-82v82m7-82v82m5-82v82" stroke="#765337" stroke-width="1.2" opacity=".8"/>
+<path d="M5 15h21M5 81h21" stroke="#3a281d" stroke-width="1.5" opacity=".75"/>
+<rect x="24" y="13" width="3" height="7" rx="1" fill="#d5b36f"/><rect x="24" y="76" width="3" height="7" rx="1" fill="#d5b36f"/>
+<circle cx="9" cy="48" r="3.5" fill="#161514" stroke="#d0aa61" stroke-width="1.5"/><path d="M8 51h3l1 6H7z" fill="#161514" stroke="#d0aa61" stroke-width="1"/>
+</svg>"""
+
+SVG_KEYPAD_DOOR = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 96" width="48" height="96">
+<rect x="16" y="1" width="30" height="94" fill="#3c3026" stroke="#9c9b83" stroke-width="2"/>
+<rect x="19" y="4" width="24" height="88" fill="#63432d" stroke="#211b17" stroke-width="1.5"/>
+<path d="M23 7v82m6-82v82m7-82v82m5-82v82" stroke="#765337" stroke-width="1.2" opacity=".8"/>
+<path d="M20 15h22M20 81h22" stroke="#302820" stroke-width="1.5" opacity=".8"/>
+<rect x="40" y="13" width="3" height="7" rx="1" fill="#d5b36f"/><rect x="40" y="76" width="3" height="7" rx="1" fill="#d5b36f"/>
+<rect x="1" y="37" width="16" height="32" rx="2" fill="#171b1c" stroke="#c7ad72" stroke-width="1.5"/>
+<rect x="4" y="40" width="10" height="6" rx="1" fill="#81947b" stroke="#344139" stroke-width="1"/>
+<g fill="#c7ad72"><circle cx="5" cy="51" r="1.4"/><circle cx="9" cy="51" r="1.4"/><circle cx="13" cy="51" r="1.4"/><circle cx="5" cy="58" r="1.4"/><circle cx="9" cy="58" r="1.4"/><circle cx="13" cy="58" r="1.4"/><circle cx="5" cy="65" r="1.4"/><circle cx="9" cy="65" r="1.4"/><circle cx="13" cy="65" r="1.4"/></g>
+</svg>"""
+
 
 def get_room_objects() -> dict:
     """Renders and returns all cached Pygame surfaces for the room furniture."""
@@ -766,5 +786,7 @@ def get_room_objects() -> dict:
         'directorate_seal': render_svg(SVG_DIRECTORATE_SEAL, 96, 82),
         'evidence_marker': render_svg(SVG_EVIDENCE_MARKER, 44, 48),
         'painting': render_svg(SVG_RAILWAY_PAINTING, 132, 82),
+        'keyhole_door': render_svg(SVG_KEYHOLE_DOOR, 32, 96),
+        'keypad_door': render_svg(SVG_KEYPAD_DOOR, 48, 96),
     }
 

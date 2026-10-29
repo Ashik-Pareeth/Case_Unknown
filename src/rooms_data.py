@@ -513,6 +513,7 @@ ROOMS_DATA = {
             },
         ],
         "wall_decor": [
+            {"prop": "keyhole_door", "pos": (872, 300)},
             {"prop": "window", "pos": (170, 16)},
             {"prop": "evidence_board", "pos": (395, 20)},
             {"prop": "sconce", "pos": (90, 35)},
@@ -521,7 +522,7 @@ ROOMS_DATA = {
         "floor_decor": [
             {"prop": "rug", "pos": (370, 240)},
             {"prop": "evidence_marker", "pos": (312, 362)},
-            {"prop": "wastebasket", "pos": (574, 383)},
+            {"prop": "wastebasket", "pos": (798, 450), "hitbox": (807, 485, 36, 20)},
         ],
         "furniture": [
             {
@@ -654,6 +655,7 @@ ROOMS_DATA = {
             },
         ],
         "wall_decor": [
+            {"prop": "keypad_door", "pos": (856, 300)},
             {"prop": "painting", "pos": (610, 18)},
             {"prop": "sconce", "pos": (470, 35)},
             {"prop": "evidence_board", "pos": (395, 20)},

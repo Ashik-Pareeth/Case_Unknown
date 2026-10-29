@@ -92,8 +92,6 @@ def main():
     active_door_gate_id = None
     active_door_wall = None
     door_hints_shown = set()
-    pending_passage_notice = None
-    passage_notice_idle = 0.0
     active_reveal = None
     game_state = STATE_MENU
 
@@ -277,8 +275,8 @@ def main():
             player.update(delta_time, room.solid_objects)
             interaction_mgr.update(delta_time, player.get_interaction_reach())
 
-            # Door locks use found keys and keypad codes. Delay a blocked-door
-            # notice until one second after the player stops trying.
+            # Door notices appear immediately and repeated contact extends the
+            # same toast instead of adding another one to the queue.
             door = room.check_door_transitions(player.hitbox)
             if door and door.get("door_code"):
                 locked_door = door["door"]
@@ -296,12 +294,10 @@ def main():
                         "The keypad needs a code. Press H for a hint.",
                     )
                     door_hints_shown.add(active_door_gate_id)
-                pending_passage_notice = None
                 game_state = STATE_PUZZLE
             elif door and door.get("blocked"):
                 msg = door["door"].get("gate_msg", "This passage is locked.")
-                pending_passage_notice = ("PASSAGE RESTRICTED", msg)
-                passage_notice_idle = 0.0
+                evidence_mgr.show_or_extend_toast("PASSAGE RESTRICTED", msg)
                 wall = door["door"]["wall"]
                 if wall == "right":
                     player.pos.x -= 16
@@ -313,7 +309,6 @@ def main():
                     player.pos.y -= 16
                 player.update_rects()
             elif door:
-                pending_passage_notice = None
                 current_room_id = door["target_room"]
                 visited_rooms.add(current_room_id)
                 player.pos = pygame.Vector2(*door["target_pos"])
@@ -321,12 +316,6 @@ def main():
                 target_data = ROOMS_DATA.get(current_room_id, ROOMS_DATA["crime_scene"])
                 room = Room(interaction_mgr, current_room_id, target_data, treasure_mgr, evidence_mgr=evidence_mgr)
                 save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
-            elif pending_passage_notice:
-                passage_notice_idle += delta_time
-                if passage_notice_idle >= 1.0:
-                    title, msg = pending_passage_notice
-                    evidence_mgr._queue_toast(title, msg)
-                    pending_passage_notice = None
 
         # =============================================================
         # 3. RENDERING
