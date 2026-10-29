@@ -11,6 +11,7 @@ from assets.renderer import render_svg
 # Room Furniture & Environment SVGs (DRY Helpers)
 # ---------------------------------------------------------------------------
 
+
 def _svg_cabinet_drawer(y: int) -> str:
     """Generates a single metal filing cabinet drawer with brass label card slot and handle."""
     return f"""  <rect x="9" y="{y}" width="46" height="17" rx="1.5" fill="url(#drawerFace)" stroke="#29302e" stroke-width="1"/>
@@ -480,7 +481,6 @@ SVG_INTERACTION_BADGE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
 </svg>"""
 
 
-
 SVG_WALL_SAFE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 90" width="80" height="90">
   <defs>
     <linearGradient id="safeOuter" x1="0" y1="0" x2="1" y2="1">
@@ -727,14 +727,188 @@ SVG_EVIDENCE_MARKER = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44
 <path d="m20 21 4-3v14m-5 0h10" fill="none" stroke="#30291e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>"""
 
-SVG_RAILWAY_PAINTING = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 82" width="132" height="82">
-<rect x="2" y="2" width="128" height="78" rx="2" fill="#33271c" stroke="#b18a50" stroke-width="3"/>
-<rect x="8" y="8" width="116" height="66" fill="#65706b" stroke="#1b211f" stroke-width="2"/>
-<path d="M9 50 36 27l20 18 19-24 47 31v21H9z" fill="#424c48"/>
-<path d="M9 57q28-12 52-2t63-1v20H9z" fill="#77715a"/>
-<path d="M15 65h104M26 55l-7 18m28-16-5 16m31-14v14m26-18 5 18" stroke="#d0bd8e" stroke-width="2" opacity=".82"/>
-<g fill="#f1d59c" font-family="serif" font-size="10" font-weight="bold"><text x="20" y="48">4</text><text x="63" y="45">1</text><text x="103" y="48">7</text></g>
-</svg>"""
+SVG_RAILWAY_PAINTING = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" width="800" height="520">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#172b40"/>
+      <stop offset="60%" stop-color="#647780"/>
+      <stop offset="100%" stop-color="#d0a77d"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#526c70"/>
+      <stop offset="100%" stop-color="#192f3c"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#b18b50"/>
+      <stop offset="45%" stop-color="#60462d"/>
+      <stop offset="100%" stop-color="#c09b60"/>
+    </linearGradient>
+    <clipPath id="canvas">
+      <rect x="34" y="34" width="732" height="452"/>
+    </clipPath>
+  </defs>
+
+  <!-- Ornate old painting frame -->
+  <rect width="800" height="520" fill="#30271f"/>
+  <rect x="8" y="8" width="784" height="504" rx="3"
+        fill="url(#frame)" stroke="#d2b47b" stroke-width="3"/>
+  <rect x="17" y="17" width="766" height="486"
+        fill="#443326" stroke="#34261c" stroke-width="4"/>
+  <rect x="25" y="25" width="750" height="470"
+        fill="url(#frame)" stroke="#d2b47b" stroke-width="2"/>
+  <rect x="34" y="34" width="732" height="452"
+        fill="#1d3039"/>
+
+  <g clip-path="url(#canvas)">
+    <!-- Evening sky -->
+    <rect x="34" y="34" width="732" height="452" fill="url(#sky)"/>
+
+    <!-- Clouds -->
+    <path d="M34 130 Q115 88 196 120 T353 107
+             Q410 91 460 120 T600 110 T766 95
+             L766 165 Q660 148 566 169 T360 158
+             T160 171 L34 158Z"
+          fill="#8b9290" opacity=".42"/>
+    <path d="M34 177 Q142 150 230 173 T408 162
+             T594 179 T766 151 L766 207
+             Q630 190 500 211 T255 201 T34 215Z"
+          fill="#d0b39a" opacity=".48"/>
+
+    <!-- Distant mountain ridge: the angled summit
+         subtly echoes a numeral without drawing text -->
+    <path d="M34 278 L120 211 L169 235 L250 147
+             L300 190 L365 120 L430 190
+             L493 156 L555 218 L626 170
+             L692 222 L766 188 L766 321 L34 321Z"
+          fill="#394e59"/>
+    <path d="M34 278 L120 211 L169 235 L250 147
+             L300 190 L365 120 L430 190"
+          fill="none" stroke="#b8b1a0" stroke-width="2"
+          opacity=".48"/>
+    <path d="M365 120 L430 190 L493 156 L555 218"
+          fill="none" stroke="#d1b9a0" stroke-width="2"
+          opacity=".35"/>
+
+    <!-- Low hills -->
+    <path d="M34 277 Q150 226 246 265
+             T445 260 T615 250 T766 263
+             L766 340 L34 340Z"
+          fill="#344b4a"/>
+    <path d="M34 304 Q158 270 272 305
+             T492 291 T766 305 L766 360 L34 360Z"
+          fill="#526255"/>
+
+    <!-- Sun behind the haze -->
+    <circle cx="535" cy="229" r="39" fill="#e4c39a" opacity=".8"/>
+    <circle cx="535" cy="229" r="29" fill="#eed6af" opacity=".62"/>
+
+    <!-- Lake -->
+    <path d="M34 322 Q190 307 360 325
+             T600 319 T766 325 L766 486 L34 486Z"
+          fill="url(#water)"/>
+    <path d="M450 281 Q535 288 625 282"
+          stroke="#e1c39c" stroke-width="2" opacity=".6"/>
+    <path d="M475 294 L592 294 M504 307 L630 307
+             M450 320 L560 320 M535 336 L658 336
+             M480 351 L615 351 M562 369 L686 369
+             M505 390 L650 390 M450 414 L580 414"
+          fill="none" stroke="#c5b29a" stroke-width="2"
+          opacity=".28"/>
+    <path d="M500 273 Q535 268 568 273
+             L585 281 L485 281Z"
+          fill="#f2d5ab" opacity=".3"/>
+
+    <!-- Foreground shoreline -->
+    <path d="M34 389 Q143 360 242 385
+             T432 393 T605 373 T766 389
+             L766 486 L34 486Z"
+          fill="#263a32"/>
+    <path d="M34 413 Q150 391 259 417
+             T480 410 T766 421"
+          fill="none" stroke="#78806a" stroke-width="3"
+          opacity=".6"/>
+
+    <!-- Left tree -->
+    <path d="M113 486 Q121 422 115 355
+             Q110 308 126 259
+             L141 264 Q127 320 136 365
+             Q141 423 148 486Z"
+          fill="#302d28"/>
+    <path d="M124 356 L84 310 L87 302
+             L130 335 L156 287 L164 291
+             L141 352Z"
+          fill="#302d28"/>
+    <path d="M128 315 L108 273 L114 267
+             L136 297 L151 263 L158 268
+             L141 320Z"
+          fill="#302d28"/>
+    <path d="M121 391 L88 363 L91 356
+             L125 376 L154 350 L160 356Z"
+          fill="#302d28"/>
+
+    <!-- Branch structure: its crossing and upright lines
+         hide the first numeral within natural tree growth -->
+    <path d="M126 350 L175 299 L179 305 L141 351
+             L181 348 L182 356 L137 361Z"
+          fill="#302d28"/>
+    <path d="M174 299 L171 273 L178 268
+             L184 305Z"
+          fill="#302d28"/>
+
+    <!-- Right tree -->
+    <path d="M679 486 Q671 417 687 351
+             Q697 300 685 251 L704 246
+             Q720 304 705 362 Q693 425 709 486Z"
+          fill="#292c28"/>
+    <path d="M696 340 L650 295 L655 288
+             L699 318 L726 275 L734 280
+             L710 343Z"
+          fill="#292c28"/>
+    <path d="M692 300 L678 267 L684 259
+             L701 284 L715 254 L723 259
+             L705 308Z"
+          fill="#292c28"/>
+
+    <!-- Small grasses -->
+    <g fill="none" stroke="#78806a" stroke-width="2"
+       opacity=".8">
+      <path d="M54 486 L62 450 L75 432 M62 466 L46 447
+               M84 486 L92 458 L105 442 M92 468 L80 451"/>
+      <path d="M730 486 L723 452 L710 437 M723 467 L741 448
+               M751 486 L745 461 L756 445"/>
+    </g>
+
+    <!-- Subtle paint texture -->
+    <g fill="none" stroke="#ead7b6" stroke-width="1"
+       opacity=".12">
+      <path d="M50 71 L180 66 M235 86 L354 79
+               M420 60 L520 68 M604 83 L739 70"/>
+      <path d="M61 236 L113 228 M197 251 L231 244
+               M312 222 L347 215 M596 242 L638 235"/>
+    </g>
+
+    <!-- Slightly darker edges, like aged oil paint -->
+    <rect x="34" y="34" width="732" height="452"
+          fill="none" stroke="#1d2728" stroke-width="18"
+          opacity=".24"/>
+  </g>
+
+  <!-- Inner gilded bevel -->
+  <rect x="30" y="30" width="740" height="460"
+        fill="none" stroke="#d0ae71" stroke-width="3"/>
+  <rect x="36" y="36" width="728" height="448"
+        fill="none" stroke="#38291e" stroke-width="2"/>
+
+  <!-- Small signs of age -->
+  <path d="M40 40 L52 40 M40 40 L40 52
+           M760 40 L748 40 M760 40 L760 52
+           M40 480 L52 480 M40 480 L40 468
+           M760 480 L748 480 M760 480 L760 468"
+        fill="none" stroke="#e0c38b" stroke-width="2"
+        opacity=".8"/>
+</svg>
+"""
 
 SVG_KEYHOLE_DOOR = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 96" width="32" height="96">
 <rect x="1" y="1" width="30" height="94" fill="#493020" stroke="#c39a58" stroke-width="2"/>
@@ -760,33 +934,32 @@ SVG_KEYPAD_DOOR = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 96"
 def get_room_objects() -> dict:
     """Renders and returns all cached Pygame surfaces for the room furniture."""
     return {
-        'desk': render_svg(SVG_DETECTIVE_DESK, 180, 120),
-        'sofa': render_svg(SVG_LEATHER_SOFA, 170, 100),
-        'filing_cabinet': render_svg(SVG_FILING_CABINET, 64, 96),
-        'evidence_board': render_svg(SVG_EVIDENCE_BOARD, 170, 95),
-        'bookshelf': render_svg(SVG_BOOKSHELF, 84, 130),
-        'window': render_svg(SVG_NOIR_WINDOW, 80, 110),
-        'rug': render_svg(SVG_VINTAGE_RUG, 220, 130),
-        'plant': render_svg(SVG_POTTED_PLANT, 60, 75),
-        'sconce': render_svg(SVG_WALL_SCONCE, 40, 50),
-        'inspect_badge': render_svg(SVG_INTERACTION_BADGE, 54, 28),
-        'safe': render_svg(SVG_WALL_SAFE, 80, 90),
-        'autopsy_table': render_svg(SVG_AUTOPSY_TABLE, 170, 100),
-        'prison_bars': render_svg(SVG_PRISON_BARS, 160, 120),
-        'interrogation_table': render_svg(SVG_INTERROGATION_TABLE, 160, 110),
-        'treasure_chest': render_svg(SVG_TREASURE_CHEST, 74, 64),
-        'specimen_cabinet': render_svg(SVG_SPECIMEN_CABINET, 74, 110),
-        'crime_desk': render_svg(SVG_CRIME_DESK, 190, 130),
-        'records_table': render_svg(SVG_RECORDS_TABLE, 180, 116),
-        'audio_console': render_svg(SVG_AUDIO_CONSOLE, 190, 132),
-        'executive_desk': render_svg(SVG_EXECUTIVE_DESK, 190, 128),
-        'chair': render_svg(SVG_TASK_CHAIR, 84, 88),
-        'wastebasket': render_svg(SVG_WASTEBASKET, 52, 62),
-        'acoustic_panel': render_svg(SVG_ACOUSTIC_PANEL, 100, 62),
-        'directorate_seal': render_svg(SVG_DIRECTORATE_SEAL, 96, 82),
-        'evidence_marker': render_svg(SVG_EVIDENCE_MARKER, 44, 48),
-        'painting': render_svg(SVG_RAILWAY_PAINTING, 132, 82),
-        'keyhole_door': render_svg(SVG_KEYHOLE_DOOR, 32, 96),
-        'keypad_door': render_svg(SVG_KEYPAD_DOOR, 48, 96),
+        "desk": render_svg(SVG_DETECTIVE_DESK, 180, 120),
+        "sofa": render_svg(SVG_LEATHER_SOFA, 170, 100),
+        "filing_cabinet": render_svg(SVG_FILING_CABINET, 64, 96),
+        "evidence_board": render_svg(SVG_EVIDENCE_BOARD, 170, 95),
+        "bookshelf": render_svg(SVG_BOOKSHELF, 84, 130),
+        "window": render_svg(SVG_NOIR_WINDOW, 80, 110),
+        "rug": render_svg(SVG_VINTAGE_RUG, 220, 130),
+        "plant": render_svg(SVG_POTTED_PLANT, 60, 75),
+        "sconce": render_svg(SVG_WALL_SCONCE, 40, 50),
+        "inspect_badge": render_svg(SVG_INTERACTION_BADGE, 54, 28),
+        "safe": render_svg(SVG_WALL_SAFE, 80, 90),
+        "autopsy_table": render_svg(SVG_AUTOPSY_TABLE, 170, 100),
+        "prison_bars": render_svg(SVG_PRISON_BARS, 160, 120),
+        "interrogation_table": render_svg(SVG_INTERROGATION_TABLE, 160, 110),
+        "treasure_chest": render_svg(SVG_TREASURE_CHEST, 74, 64),
+        "specimen_cabinet": render_svg(SVG_SPECIMEN_CABINET, 74, 110),
+        "crime_desk": render_svg(SVG_CRIME_DESK, 190, 130),
+        "records_table": render_svg(SVG_RECORDS_TABLE, 180, 116),
+        "audio_console": render_svg(SVG_AUDIO_CONSOLE, 190, 132),
+        "executive_desk": render_svg(SVG_EXECUTIVE_DESK, 190, 128),
+        "chair": render_svg(SVG_TASK_CHAIR, 84, 88),
+        "wastebasket": render_svg(SVG_WASTEBASKET, 52, 62),
+        "acoustic_panel": render_svg(SVG_ACOUSTIC_PANEL, 100, 62),
+        "directorate_seal": render_svg(SVG_DIRECTORATE_SEAL, 96, 82),
+        "evidence_marker": render_svg(SVG_EVIDENCE_MARKER, 44, 48),
+        "painting": render_svg(SVG_RAILWAY_PAINTING, 132, 82),
+        "keyhole_door": render_svg(SVG_KEYHOLE_DOOR, 32, 96),
+        "keypad_door": render_svg(SVG_KEYPAD_DOOR, 48, 96),
     }
-
