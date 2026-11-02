@@ -31,6 +31,7 @@ from assets.svg_assets import get_room_objects
 from src.interaction import InteractionManager
 from src.rooms_data import ROOMS_DATA
 from src.evidence_manager import TYPE_EXAMINABLE, TYPE_EVIDENCE, EvidenceManager
+from src.npc import RoomNPCController
 
 
 class Room:
@@ -92,10 +93,15 @@ class Room:
         # Build walls, doorways, furniture, and interactables
         self._setup_doorways_and_walls()
         self._setup_furniture_and_interactables(interaction_mgr)
+        self.npc_controller = RoomNPCController(self.room_id, self.floor_rect, self.solid_objects)
 
         # Door font
         pygame.font.init()
         self.door_font = pygame.font.SysFont("segoeui", 11, bold=True)
+
+    def update_npcs(self, delta_time: float):
+        """Advance autonomous room patrols without reading or changing player input."""
+        self.npc_controller.update(delta_time, self.floor_rect, self.solid_objects)
 
     def _setup_doorways_and_walls(self):
         """Constructs solid walls with doorway passages leaving openings for travel."""

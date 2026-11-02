@@ -247,6 +247,7 @@ def main():
         # 2. UPDATE GAME LOGIC
         # =============================================================
         evidence_mgr.update(delta_time)
+        room.update_npcs(delta_time)
 
         if game_state == STATE_MENU:
             menu.update(delta_time)
@@ -336,6 +337,7 @@ def main():
                     "sort_y": item["sort_y"],
                     "draw": lambda surf=item["surface"], rect=item["rect"]: screen.blit(surf, rect),
                 })
+            draw_queue.extend(room.npc_controller.draw_queue(screen))
             draw_queue.append({
                 "sort_y": player.hitbox.bottom,
                 "draw": lambda: player.draw(screen),
