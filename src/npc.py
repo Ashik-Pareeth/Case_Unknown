@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 import pygame
 
@@ -49,6 +50,8 @@ class AutonomousNPC:
         self.phase = "walk"
         self.phase_timer = self.rng.uniform(1.0, 2.4)
         self.speed = 58.0
+        self.vision_range = 190
+        self.vision_half_angle = 35
         self.direction = self.rng.choice(self._safe_directions())
         self.state = "walk"
         self.image = None
@@ -138,6 +141,28 @@ class AutonomousNPC:
     def draw(self, surface: pygame.Surface):
         surface.blit(self.image, self.sprite_rect)
 
+    def draw_vision(self, surface: pygame.Surface):
+        """Draw this NPC's 70-degree forward field of view."""
+        facing_angle = {
+            "right": 0,
+            "down": 90,
+            "left": 180,
+            "up": 270,
+        }[self.direction]
+        origin = (round(self.pos.x), round(self.pos.y - 48))
+        angles = range(-self.vision_half_angle, self.vision_half_angle + 1, 5)
+        arc = [
+            (
+                round(origin[0] + math.cos(math.radians(facing_angle + offset)) * self.vision_range),
+                round(origin[1] + math.sin(math.radians(facing_angle + offset)) * self.vision_range),
+            )
+            for offset in angles
+        ]
+        points = [origin, *arc]
+        pygame.draw.polygon(surface, (218, 174, 86, 24), points)
+        pygame.draw.lines(surface, (218, 174, 86, 62), False, [origin, arc[0]], 1)
+        pygame.draw.lines(surface, (218, 174, 86, 62), False, [origin, arc[-1]], 1)
+
 
 class RoomNPCController:
     """Owns independent NPCs for one room and updates their patrols."""
@@ -192,3 +217,12 @@ class RoomNPCController:
             {"sort_y": npc.sort_y, "draw": lambda actor=npc: actor.draw(surface)}
             for npc in self.npcs
         ]
+
+    def draw_vision(self, surface: pygame.Surface, bounds: pygame.Rect):
+        if not self.npcs:
+            return
+        vision_layer = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        vision_layer.set_clip(bounds)
+        for npc in self.npcs:
+            npc.draw_vision(vision_layer)
+        surface.blit(vision_layer, (0, 0))

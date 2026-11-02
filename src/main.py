@@ -329,6 +329,7 @@ def main():
 
             # 3.1 Room Environment & Decor
             room.draw_background(screen)
+            room.npc_controller.draw_vision(screen, room.floor_rect)
 
             # 3.2 Depth-Sorted Entities
             draw_queue = []
