@@ -21,6 +21,7 @@ from src.settings import (
     UI_ACCENT_GOLD,
     UI_SUCCESS_GREEN,
 )
+from src.ui.puzzle import draw_puzzle_frame
 
 
 class BasePuzzle:
@@ -71,91 +72,7 @@ class BasePuzzle:
                 self.feedback_message = ""
 
     def draw_modal_frame(self, surface: pygame.Surface):
-        # Dimming preserves the room and makes this feel like examining an object in place.
-        backdrop = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        backdrop.fill((6, 9, 12, 170))
-        surface.blit(backdrop, (0, 0))
-
-        shadow = pygame.Rect(self.modal_rect.x - 8, self.modal_rect.y + 9, self.modal_w + 16, self.modal_h + 16)
-        pygame.draw.rect(surface, (4, 6, 7), shadow, border_radius=11)
-        pygame.draw.rect(surface, (22, 27, 29), self.modal_rect, border_radius=8)
-        pygame.draw.rect(surface, (119, 104, 73), self.modal_rect, 1, border_radius=8)
-        pygame.draw.rect(surface, (45, 50, 49), self.modal_rect.inflate(-8, -8), 1, border_radius=6)
-        header_rect = pygame.Rect(self.modal_x + 5, self.modal_y + 5, self.modal_w - 10, 72)
-        pygame.draw.rect(surface, (30, 36, 37), header_rect, border_top_left_radius=7, border_top_right_radius=7)
-        pygame.draw.rect(surface, (177, 143, 82), (self.modal_x, self.modal_y + 12, 4, 48))
-        eyebrow = self.font_kicker.render("FIELD MECHANISM  /  CASE ACCESS", True, (148, 162, 151))
-        surface.blit(eyebrow, (self.modal_x + 24, self.modal_y + 12))
-        title_surf = self.font_title.render(self.title, True, (230, 218, 184))
-        surface.blit(title_surf, (self.modal_x + 24, self.modal_y + 31))
-        sub_surf = self.font_sub.render(self.reward_name, True, (163, 163, 145))
-        surface.blit(sub_surf, (self.modal_x + 25, self.modal_y + 55))
-        pygame.draw.line(surface, (76, 79, 70), (self.modal_x + 20, self.modal_y + 78),
-                         (self.modal_rect.right - 20, self.modal_y + 78), 1)
-
-        # Close [X] Button
-        mouse_pos = pygame.mouse.get_pos()
-        close_hover = self.btn_close_rect.collidepoint(mouse_pos)
-        close_bg = (101, 62, 51) if close_hover else (42, 48, 47)
-        pygame.draw.rect(surface, close_bg, self.btn_close_rect, border_radius=4)
-        pygame.draw.rect(surface, UI_PANEL_BORDER, self.btn_close_rect, 1, border_radius=4)
-        close_text = self.font_btn.render("X", True, (240, 240, 240))
-        surface.blit(close_text, close_text.get_rect(center=self.btn_close_rect.center))
-
-        # Bottom Action Buttons
-        check_hover = self.btn_check_rect.collidepoint(mouse_pos)
-        check_color = (60, 110, 75) if check_hover else (35, 65, 45)
-        if self.is_solved:
-            check_color = (40, 140, 70)
-        pygame.draw.rect(surface, check_color, self.btn_check_rect, border_radius=5)
-        pygame.draw.rect(surface, UI_SUCCESS_GREEN if self.is_solved else UI_PANEL_BORDER, self.btn_check_rect, 1, border_radius=5)
-        check_label = "UNLOCKED!" if self.is_solved else "UNLOCK [ENTER]"
-        btn_check_surf = self.font_btn.render(check_label, True, (240, 245, 240))
-        surface.blit(btn_check_surf, btn_check_surf.get_rect(center=self.btn_check_rect.center))
-
-        hint_hover = self.btn_hint_rect.collidepoint(mouse_pos)
-        hint_color = (75, 65, 40) if hint_hover else (45, 40, 30)
-        pygame.draw.rect(surface, hint_color, self.btn_hint_rect, border_radius=5)
-        pygame.draw.rect(surface, UI_PANEL_BORDER, self.btn_hint_rect, 1, border_radius=5)
-        hint_label = "HIDE HINT [H]" if self.show_hint else "VIEW HINT [H]"
-        btn_hint_surf = self.font_btn.render(hint_label, True, UI_ACCENT_GOLD)
-        surface.blit(btn_hint_surf, btn_hint_surf.get_rect(center=self.btn_hint_rect.center))
-
-        # Hint Box (when toggled with multi-line word wrapping)
-        if self.show_hint:
-            full_hint_text = f"Detective Note: \"{self.hint}\""
-            max_hint_w = self.modal_w - 90
-            words = full_hint_text.split(" ")
-            hint_lines = []
-            cur_line = []
-            for w in words:
-                test = " ".join(cur_line + [w])
-                if self.font_hint.size(test)[0] <= max_hint_w:
-                    cur_line.append(w)
-                else:
-                    hint_lines.append(" ".join(cur_line))
-                    cur_line = [w]
-            if cur_line:
-                hint_lines.append(" ".join(cur_line))
-
-            box_h = max(48, 16 + len(hint_lines) * 20)
-            hint_box_rect = pygame.Rect(self.modal_x + 30, self.modal_y + self.modal_h - 78 - box_h, self.modal_w - 60, box_h)
-            pygame.draw.rect(surface, (18, 22, 28, 245), hint_box_rect, border_radius=5)
-            pygame.draw.rect(surface, (140, 115, 65), hint_box_rect, 1, border_radius=5)
-
-            hy = hint_box_rect.y + 10
-            for line in hint_lines:
-                ht_surf = self.font_hint.render(line, True, (240, 225, 175))
-                surface.blit(ht_surf, (hint_box_rect.x + 14, hy))
-                hy += 20
-
-        # Feedback Message Banner
-        if self.feedback_message:
-            fb_surf = self.font_btn.render(self.feedback_message, True, self.feedback_color)
-            fb_rect = fb_surf.get_rect(center=(self.modal_x + self.modal_w // 2, self.modal_y + self.modal_h - 146))
-            surface.blit(fb_surf, fb_rect)
-
-
+        draw_puzzle_frame(self, surface)
 
 class NumberLockPuzzle(BasePuzzle):
     """

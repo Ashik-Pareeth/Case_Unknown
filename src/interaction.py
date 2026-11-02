@@ -24,6 +24,8 @@ from src.settings import (
     UI_SUCCESS_GREEN,
 )
 from assets.svg_assets import render_svg, SVG_INTERACTION_BADGE
+from src.ui.interaction_prompt import InteractionPrompt
+from src.ui.evidence_reader import EvidenceReaderFrame
 from src.evidence_manager import (
     TYPE_ENVIRONMENTAL,
     TYPE_EXAMINABLE,
@@ -77,6 +79,7 @@ class InteractionManager:
 
         # Badge surface
         self.badge_surface = render_svg(SVG_INTERACTION_BADGE, 54, 28)
+        self.prompt_ui = InteractionPrompt(self.badge_surface)
 
         # Fonts
         pygame.font.init()
@@ -192,12 +195,7 @@ class InteractionManager:
         if self.active_object is None or self.is_inspecting:
             return
 
-        bx, by = self.active_object.badge_pos
-        float_offset = math.sin(self.anim_time * 5.0) * 3.5
-        prompt_x = bx - self.badge_surface.get_width() // 2
-        prompt_y = by - self.badge_surface.get_height() // 2 + float_offset
-
-        surface.blit(self.badge_surface, (prompt_x, prompt_y))
+        self.prompt_ui.draw(surface, self.active_object.badge_pos, self.anim_time)
 
     def _wrap_text(self, text: str, font: pygame.font.Font, max_width: int) -> list[str]:
         lines = []
@@ -231,13 +229,7 @@ class InteractionManager:
 
         is_evidence = obj.obj_type == TYPE_EVIDENCE
         outer = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
-        shadow = pygame.Surface((panel_w + 22, panel_h + 22), pygame.SRCALPHA)
-        pygame.draw.rect(shadow, (0, 0, 0, 115), shadow.get_rect(), border_radius=12)
-        surface.blit(shadow, (panel_x - 11, panel_y + 7))
-        pygame.draw.rect(surface, (19, 23, 25), outer, border_radius=8)
-        pygame.draw.rect(surface, (122, 105, 72), outer, 1, border_radius=8)
-        pygame.draw.rect(surface, (46, 48, 43), outer.inflate(-8, -8), 1, border_radius=6)
-        pygame.draw.rect(surface, (173, 139, 79), (panel_x, panel_y, 5, panel_h), border_top_left_radius=8, border_bottom_left_radius=8)
+        EvidenceReaderFrame.draw(surface, outer)
 
         header = pygame.Rect(panel_x + 5, panel_y + 5, panel_w - 10, 76)
         pygame.draw.rect(surface, (27, 32, 33), header)
@@ -274,8 +266,7 @@ class InteractionManager:
         surface.blit(side_label, (card.x + 43, card.bottom - 31))
 
         content = pygame.Rect(panel_x + 216, panel_y + 101, panel_w - 244, 320)
-        pygame.draw.rect(surface, (23, 27, 28), content, border_radius=4)
-        pygame.draw.rect(surface, (61, 65, 60), content, 1, border_radius=4)
+        EvidenceReaderFrame.draw_content(surface, content)
         desc_lines = self._wrap_text(obj.description, self.body_font, content.width - 32)
         doc_lines = self._wrap_text(obj.full_text, self.doc_font, content.width - 36) if obj.full_text else []
         text_blocks = [("OBSERVATION", desc_lines, self.body_font, (219, 218, 207), 23)]

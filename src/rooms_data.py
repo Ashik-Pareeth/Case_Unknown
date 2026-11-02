@@ -163,6 +163,12 @@ ROOMS_DATA = {
                 "label": "West Hallway -> Detective Office",
             },
             {
+                "wall": "bottom",
+                "target_room": "records_room",
+                "target_pos": (480, 80),
+                "label": "South Passage -> Directorate Records Room",
+            },
+            {
                 "wall": "top",
                 "target_room": "morgue",
                 "target_pos": (480, 520),
@@ -642,6 +648,12 @@ ROOMS_DATA = {
                 "target_room": "crime_scene",
                 "target_pos": (820, 350),
                 "label": "West Passage -> The Crime Scene",
+            },
+            {
+                "wall": "top",
+                "target_room": "archive",
+                "target_pos": (480, 520),
+                "label": "North Passage -> Forensic Evidence Archive",
             },
             {
                 "wall": "right",
