@@ -324,17 +324,15 @@ def _grunt_svg_back(
     l_arm_dy: int = 0, r_arm_dy: int = 0,
     grunt_idx: int = 0,
 ) -> str:
-    """Back view based on user-supplied artwork.
+    """Back view based on user-supplied artwork, seamlessly proportioned to match front & profile.
 
-    Modifications applied to the reference SVG:
-      - Defs replaced with shared _mob_defs() (same gradient IDs, slight
-        coat-colour variation per grunt_idx).
-      - Hat-band colour normalised to #3b2025 to match front view.
-      - Arms (+ sleeve folds + gloves) wrapped in per-side translate groups
-        so they swing during the walk cycle.
-      - Trousers + boots moved outside the bob group so they stay grounded.
-      - Bob group wraps hat / head / collar / coat body / vent / hem.
-      - Ground-contact shadow ellipse added.
+    Features preserved & aligned:
+      - Tall top hat viewed from behind (matching front/side crown and brim levels).
+      - Back of head and iconic raised coat collar (#343236 with inner facing #242326).
+      - Overcoat rear silhouette with center back seam, shoulder seams, and draped fabric folds.
+      - Rear coat vent with burgundy slit accent (#4a171e).
+      - Sleeves with fabric fold lines, cuffs, and gloves viewed from behind.
+      - Trousers and boots with heel notches matching front ground plane.
     """
     defs = _mob_defs(grunt_idx)
     lx, ly = l_leg_dx * 8, l_leg_dy * 10
@@ -347,155 +345,142 @@ def _grunt_svg_back(
 {defs}
 
   <!-- Ground shadow -->
-  <ellipse cx="160" cy="474" rx="102" ry="11" fill="#000" opacity="0.42"/>
+  <ellipse cx="160" cy="476" rx="106" ry="11" fill="#000" opacity="0.42"/>
 
-  <!-- ── LEFT TROUSER + BOOT ── -->
+  <!-- ── LEFT TROUSER + BOOT (viewed from behind) ── -->
   <g transform="translate({lx},{ly})">
-    <path d="M91 389 L153 396 L148 449 L111 449 L103 418 L83 418 Z"
-          fill="#171719"/>
-    <path d="M108 441 L149 441 L151 463 Q130 470 101 463 Z"
-          fill="#0d0d0e"/>
-    <path d="M108 450 L149 450" stroke="#38373a" stroke-width="2" fill="none"/>
+    <path d="M100 366 L158 385 L154 466 L101 466Z"
+          fill="#18191c" stroke="#090a0c" stroke-width="2"/>
+    <path d="M119 390 L116 457 M139 395 L137 457"
+          fill="none" stroke="#34353a" stroke-width="1.5"/>
+    <!-- Boot with heel notch -->
+    <path d="M101 457 L154 457 L151 475 L88 475 Q87 465 101 457Z"
+          fill="#090a0c" stroke="#050506" stroke-width="2"/>
+    <rect x="96" y="464" width="20" height="9" rx="2" fill="#06070a"/>
+    <path d="M98 466 L145 466" stroke="#45464a" stroke-width="2" fill="none"/>
   </g>
 
-  <!-- ── RIGHT TROUSER + BOOT ── -->
+  <!-- ── RIGHT TROUSER + BOOT (viewed from behind) ── -->
   <g transform="translate({rx},{ry})">
-    <path d="M167 396 L229 389 L237 418 L217 418 L209 449 L172 449 Z"
-          fill="#171719"/>
-    <path d="M171 441 L212 441 L219 463 Q190 470 169 463 Z"
-          fill="#0d0d0e"/>
-    <path d="M171 450 L212 450" stroke="#38373a" stroke-width="2" fill="none"/>
+    <path d="M162 385 L220 366 L219 466 L166 466Z"
+          fill="#18191c" stroke="#090a0c" stroke-width="2"/>
+    <path d="M181 395 L183 457 M201 390 L204 457"
+          fill="none" stroke="#34353a" stroke-width="1.5"/>
+    <path d="M166 457 L219 457 L232 475 L169 475Z"
+          fill="#090a0c" stroke="#050506" stroke-width="2"/>
+    <rect x="204" y="464" width="20" height="9" rx="2" fill="#06070a"/>
+    <path d="M174 466 L222 466" stroke="#45464a" stroke-width="2" fill="none"/>
   </g>
 
   <!-- ── BOB GROUP (hat / head / collar / coat / arms breathe together) ── -->
   <g transform="translate(0,{b})">
 
-    <!-- ╔══ HAT (drawn first — behind head) ══╗ -->
-    <!-- Tall crown (back) -->
-    <path d="M92 74 L99 15 Q160 4 221 15 L228 74 Z"
-          fill="url(#hat)" stroke="#080809" stroke-width="3"/>
-    <!-- Crown highlight line -->
-    <path d="M100 25 Q160 17 220 25"
-          fill="none" stroke="#444246" stroke-width="2" opacity=".5"/>
-    <!-- Hat-band ribbon (burgundy, matches front) -->
-    <path d="M91 54 Q160 62 229 54 L231 69 Q160 78 89 69 Z"
-          fill="#3b2025"/>
-    <!-- Wide brim (back) -->
-    <path d="M65 77 Q160 62 255 77 L265 91 Q160 106 55 91 Z"
-          fill="#171719" stroke="#080809" stroke-width="3"/>
-
-    <!-- ╔══ HEAD + COLLAR (in front of hat) ══╗ -->
-    <!-- Back of skull (dark block behind collar) -->
-    <path d="M124 91 L196 91 L200 123 L120 123 Z" fill="#171719"/>
-    <!-- Raised coat collar (dark grey, slightly lighter for depth) -->
-    <path d="M108 108 L133 91 L160 112 L187 91 L212 108
-             L194 145 L126 145 Z"
-          fill="#343236" stroke="#111113" stroke-width="3"/>
-    <!-- Inner collar facing -->
-    <path d="M133 93 L160 112 L187 93 L180 126 L140 126 Z"
-          fill="#242326"/>
-
-    <!-- ╔══ ARMS (behind coat body, swing per step) ══╗ -->
-    <!-- Left sleeve -->
-    <g transform="translate(0,{la})">
-      <path d="M112 137
-               Q100 143 94 157
-               L77 214
-               Q73 231 76 249
-               L82 264
-               Q87 270 94 266
-               L104 259
-               Q99 247 103 231
-               L120 180
-               Q127 162 136 154 Z"
-            fill="url(#coat)" stroke="#0b0b0c" stroke-width="3"
-            stroke-linejoin="round"/>
-      <!-- Sleeve folds -->
-      <path d="M99 177 Q105 181 111 181
-               M91 204 Q98 208 104 207
-               M83 235 Q90 239 99 236"
-            fill="none" stroke="#444246" stroke-width="2" opacity=".6"/>
-      <!-- Left glove -->
-      <path d="M82 258
-               Q78 266 83 273
-               Q89 280 96 273
-               L105 263
-               L101 254
-               Q96 251 92 257
-               L88 252
-               Q83 251 82 258 Z"
-            fill="#111113" stroke="#080809" stroke-width="2"
-            stroke-linejoin="round"/>
-    </g>
-
-    <!-- Right sleeve -->
-    <g transform="translate(0,{ra})">
-      <path d="M208 137
-               Q220 143 226 157
-               L243 214
-               Q247 231 244 249
-               L238 264
-               Q233 270 226 266
-               L216 259
-               Q221 247 217 231
-               L200 180
-               Q193 162 184 154 Z"
-            fill="url(#coat)" stroke="#0b0b0c" stroke-width="3"
-            stroke-linejoin="round"/>
-      <!-- Sleeve folds -->
-      <path d="M202 181 Q208 181 214 177
-               M209 207 Q215 208 222 204
-               M221 236 Q230 239 237 235"
-            fill="none" stroke="#444246" stroke-width="2" opacity=".6"/>
-      <!-- Right glove -->
-      <path d="M238 258
-               Q242 266 237 273
-               Q231 280 224 273
-               L215 263
-               L219 254
-               Q224 251 228 257
-               L232 252
-               Q237 251 238 258 Z"
-            fill="#111113" stroke="#080809" stroke-width="2"
-            stroke-linejoin="round"/>
-    </g>
-
-    <!-- ╔══ OVERCOAT BODY (rear silhouette, covers arm tops) ══╗ -->
-    <path d="M112 132
-             Q160 116 208 132
-             L229 183
-             L219 293
-             L238 392
-             Q160 414 82 392
-             L101 293
-             L91 183 Z"
-          fill="url(#coat)" stroke="#0b0b0c" stroke-width="4"
+    <!-- ╔══ OVERCOAT BODY (rear silhouette, matches front shoulders & hem) ══╗ -->
+    <path d="M133 204 L99 216 L73 240 L43 438
+             L85 449 L91 466 L229 466 L235 449 L277 438
+             L247 240 L221 216 L187 204
+             L175 220 L160 216 L145 220Z"
+          fill="url(#coat)" stroke="#090a0c" stroke-width="3"
           stroke-linejoin="round"/>
 
-    <!-- Shoulder seams -->
-    <path d="M112 136 Q133 151 160 153 Q187 151 208 136"
+    <!-- Shoulder seams (rear view) -->
+    <path d="M112 216 Q160 228 208 216"
           fill="none" stroke="#444246" stroke-width="2" opacity=".75"/>
-    <path d="M112 139 L130 171 M208 139 L190 171"
+    <path d="M112 218 L130 250 M208 218 L190 250"
           fill="none" stroke="#111113" stroke-width="2"/>
 
-    <!-- Center back seam + fabric folds -->
-    <path d="M160 153 L160 390"
-          fill="none" stroke="#0d0d0e" stroke-width="2.5"/>
-    <path d="M133 172 Q145 205 139 242 L127 313"
+    <!-- Center back seam and draped fabric folds -->
+    <path d="M160 228 L160 395" fill="none" stroke="#0d0d0e" stroke-width="2.5"/>
+    <path d="M133 245 Q145 285 139 330 L127 410"
           fill="none" stroke="#3b393d" stroke-width="2" opacity=".6"/>
-    <path d="M187 172 Q175 205 181 242 L193 313"
+    <path d="M187 245 Q175 285 181 330 L193 410"
           fill="none" stroke="#3b393d" stroke-width="2" opacity=".6"/>
-    <path d="M103 290 Q119 302 132 304 M217 290 Q201 302 188 304"
+    <path d="M103 360 Q119 375 132 377 M217 360 Q201 375 188 377"
           fill="none" stroke="#444246" stroke-width="2" opacity=".5"/>
 
-    <!-- Rear coat vent -->
-    <path d="M145 345 L160 390 L175 345 L175 398 Q160 402 145 398 Z"
-          fill="#111113" stroke="#080809" stroke-width="2"/>
-    <path d="M160 390 L160 400" fill="none" stroke="#4a171e" stroke-width="3"/>
+    <!-- Side tailoring seams -->
+    <path d="M104 221 L76 438 M216 221 L244 438"
+          fill="none" stroke="#45464a" stroke-width="1.5"/>
+    <path d="M91 466 L229 466" stroke="#45464a" stroke-width="2"/>
 
-    <!-- Coat hem -->
-    <path d="M82 392 Q160 414 238 392"
+    <!-- Rear coat vent with burgundy slit accent -->
+    <path d="M145 405 L160 455 L175 405 L175 466 Q160 470 145 466 Z"
+          fill="#111113" stroke="#080809" stroke-width="2"/>
+    <path d="M160 445 L160 466" fill="none" stroke="#4a171e" stroke-width="3"/>
+
+    <!-- Coat bottom hem curve -->
+    <path d="M85 449 Q160 472 235 449"
           fill="none" stroke="#454347" stroke-width="2"/>
+
+    <!-- ╔══ ARMS (swung with la / ra walk translates) ══╗ -->
+    <!-- Left sleeve from behind -->
+    <g transform="translate(0,{la})">
+      <path d="M100 219 L76 241 L57 343 L82 350 L109 263Z"
+            fill="url(#coat)" stroke="#0b0b0c" stroke-width="3"
+            stroke-linejoin="round"/>
+      <!-- Sleeve folds -->
+      <path d="M83 242 Q89 246 95 245
+               M76 270 Q83 274 88 272
+               M69 302 Q77 306 84 303"
+            fill="none" stroke="#444246" stroke-width="2" opacity=".6"/>
+      <!-- Cuff -->
+      <path d="M57 337 L83 344 L80 361 L54 354Z"
+            fill="#17181b" stroke="#55565a" stroke-width="2"/>
+      <!-- Glove -->
+      <path d="M54 354 Q47 368 55 382 L68 390 L81 361Z"
+            fill="#111113" stroke="#080809" stroke-width="2"
+            stroke-linejoin="round"/>
+    </g>
+
+    <!-- Right sleeve from behind -->
+    <g transform="translate(0,{ra})">
+      <path d="M220 219 L244 241 L263 343 L238 350 L211 263Z"
+            fill="url(#coat)" stroke="#0b0b0c" stroke-width="3"
+            stroke-linejoin="round"/>
+      <!-- Sleeve folds -->
+      <path d="M225 245 Q231 246 237 242
+               M232 272 Q237 274 244 270
+               M236 303 Q243 306 251 302"
+            fill="none" stroke="#444246" stroke-width="2" opacity=".6"/>
+      <!-- Cuff -->
+      <path d="M237 344 L263 337 L266 354 L240 361Z"
+            fill="#17181b" stroke="#55565a" stroke-width="2"/>
+      <!-- Glove -->
+      <path d="M266 354 Q273 368 265 382 L252 390 L239 361Z"
+            fill="#111113" stroke="#080809" stroke-width="2"
+            stroke-linejoin="round"/>
+    </g>
+
+    <!-- ╔══ HAT (drawn behind head/collar) ══╗ -->
+    <!-- Tall crown (matches front height & width) -->
+    <path d="M77 100 L83 14 Q160 -4 237 14 L243 100Z"
+          fill="url(#hat)" stroke="#090a0c" stroke-width="4"/>
+    <!-- Crown highlight line -->
+    <path d="M83 18 Q160 1 237 18" fill="none" stroke="#44454a" stroke-width="2"/>
+    <!-- Hat band (burgundy ribbon) -->
+    <path d="M79 76 L241 76 L243 98 L77 98Z" fill="#3b2025"/>
+    <path d="M79 76 L241 76" stroke="#5b393e" stroke-width="2"/>
+    <!-- Wide brim (matches front outer tips and curve) -->
+    <path d="M36 108 Q160 79 284 108 Q299 114 284 127 Q160 153 36 127 Q21 114 36 108Z"
+          fill="url(#hat)" stroke="#090a0c" stroke-width="4"/>
+    <path d="M36 113 Q160 87 284 113" fill="none" stroke="#45464b" stroke-width="2"/>
+
+    <!-- ╔══ BACK OF HEAD & RAISED COAT COLLAR ══╗ -->
+    <!-- Back of head under brim -->
+    <path d="M105 116 Q160 99 215 116 L208 153 Q202 181 160 197 Q118 181 112 153Z"
+          fill="#18191c" stroke="#08090b" stroke-width="3"/>
+    <!-- Balaclava fabric texture lines -->
+    <path d="M128 126 Q160 118 192 126"
+          fill="none" stroke="#2a2b30" stroke-width="1.5" opacity=".7"/>
+    <path d="M120 148 Q160 140 200 148"
+          fill="none" stroke="#24252a" stroke-width="1.2" opacity=".5"/>
+
+    <!-- Raised coat collar (user's iconic rear collar, framing the neck) -->
+    <path d="M112 184 L134 168 L160 188 L186 168 L208 184 L196 216 L124 216 Z"
+          fill="#343236" stroke="#111113" stroke-width="3"/>
+    <!-- Inner collar facing -->
+    <path d="M134 170 L160 188 L186 170 L180 202 L140 202 Z"
+          fill="#242326"/>
 
   </g>
 </svg>"""
@@ -560,7 +545,6 @@ def _grunt_svg_side(
           fill="#17181b" stroke="#55565a" stroke-width="2"/>
     <path d="M74 358 Q67 372 75 385 L87 392 L100 364Z"
           fill="#111113" stroke="#080809" stroke-width="2" stroke-linejoin="round"/>
-          fill="#101114" stroke="#08090b" stroke-width="2"/>
 
     <!-- Coat body (side – slightly narrower depth) -->
     <path d="M112 208 Q100 218 86 244 L62 440
@@ -615,6 +599,8 @@ def _grunt_svg_side(
 
     <!-- Neck + collar side — dark to match raised collar in back view -->
     <path d="M150 186 L182 186 L185 210 L148 210Z" fill="#16171a"/>
+    <!-- Raised coat collar peak at nape of neck (matches back view) -->
+    <path d="M148 210 L140 178 L154 186 Z" fill="#343236" stroke="#111113" stroke-width="2.5"/>
     <!-- Shirt visible at lapel V — same dark tone as raised collar facing -->
     <path d="M160 190 L165 207 L178 190 L182 186 L165 198 L160 186Z" fill="#343236"/>
     <path d="M162 200 L165 207 L174 200 L172 224 L165 232 L158 224Z"
