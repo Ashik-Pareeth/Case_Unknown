@@ -594,6 +594,7 @@ ROOMS_DATA = {
                 "badge_pos": (642, 404),
                 "obj_type": "examinable",
                 "key_id": "records_room_key",
+                "image": "assets/assets/key.png",
                 "full_text": "A small brass key, hidden beneath a loose floorboard. The tag reads: EAST RECORDS PASSAGE.",
             },
             {

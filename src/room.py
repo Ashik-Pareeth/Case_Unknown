@@ -291,6 +291,9 @@ class Room:
                     is_treasure=is_treasure,
                     treasure_id=treasure_id,
                     key_id=f.get("key_id", ""),
+                    image=f.get("image") or f.get("asset"),
+                    image_path=f.get("image_path", ""),
+                    card_side=f.get("card_side", "right"),
                 )
 
         # 4. Standalone Environmental Interactables
@@ -305,6 +308,9 @@ class Room:
                 evidence_id=inter.get("evidence_id", ""),
                 full_text=inter.get("full_text", ""),
                 key_id=inter.get("key_id", ""),
+                image=inter.get("image") or inter.get("asset"),
+                image_path=inter.get("image_path", ""),
+                card_side=inter.get("card_side", "right"),
             )
 
     def check_door_transitions(self, player_hitbox: pygame.Rect) -> dict | None:
