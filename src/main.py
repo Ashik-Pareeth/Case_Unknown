@@ -35,6 +35,7 @@ from src.settings import (
     STATE_MAP,
     STATE_JOURNAL,
     STATE_REVEAL,
+    STATE_GAME_OVER,
 )
 from src.player import Player
 from src.room import Room
@@ -48,6 +49,7 @@ from src.journal_view import JournalView
 from src.save_manager import SaveManager
 from src.evidence_reveal import EvidenceRevealModal
 from src.puzzles import NumberLockPuzzle
+from src.game_over import GameOverWindow
 
 
 def main():
@@ -93,6 +95,7 @@ def main():
     active_door_wall = None
     door_hints_shown = set()
     active_reveal = None
+    game_over_modal = None
     game_state = STATE_MENU
 
     running = True
@@ -218,6 +221,36 @@ def main():
                         game_state = STATE_PLAYING
 
             # ---------------------------------------------------------
+            # State: GAME OVER
+            # ---------------------------------------------------------
+            elif game_state == STATE_GAME_OVER:
+                if game_over_modal:
+                    action = game_over_modal.handle_event(event)
+                    if action == "RETRY":
+                        evidence_mgr = EvidenceManager()
+                        interaction_mgr.set_evidence_manager(evidence_mgr)
+                        journal_view = JournalView(evidence_mgr)
+                        menu.evidence_mgr = evidence_mgr
+                        current_room_id = "crime_scene"
+                        visited_rooms = {current_room_id}
+                        room = Room(
+                            interaction_mgr,
+                            current_room_id,
+                            ROOMS_DATA[current_room_id],
+                            treasure_mgr,
+                            evidence_mgr=evidence_mgr,
+                        )
+                        player = Player(start_x=SCREEN_WIDTH // 2, start_y=420)
+                        has_active_game = True
+                        game_over_modal = None
+                        game_state = STATE_PLAYING
+                        save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
+                    elif action == "MENU":
+                        has_active_game = False
+                        game_over_modal = None
+                        game_state = STATE_MENU
+
+            # ---------------------------------------------------------
             # State: PLAYING
             # ---------------------------------------------------------
             elif game_state == STATE_PLAYING:
@@ -266,6 +299,10 @@ def main():
                     active_reveal = None
                     game_state = STATE_PLAYING
 
+        elif game_state == STATE_GAME_OVER:
+            if game_over_modal:
+                game_over_modal.update(delta_time)
+
         elif game_state == STATE_PLAYING:
             if interaction_mgr.is_inspecting:
                 player.state = "idle"
@@ -275,6 +312,16 @@ def main():
 
             player.update(delta_time, room.solid_objects)
             interaction_mgr.update(delta_time, player.get_interaction_reach())
+
+            # Check viewpoint collision with patrolling NPCs
+            if room.check_player_spotted(player):
+                save_mgr.clear_save()
+                has_active_game = False
+                interaction_mgr.active_evidence = None
+                interaction_mgr.is_inspecting = False
+                game_over_modal = GameOverWindow()
+                game_state = STATE_GAME_OVER
+                continue
 
             # Door notices appear immediately and repeated contact extends the
             # same toast instead of adding another one to the queue.
@@ -324,7 +371,7 @@ def main():
         if game_state == STATE_MENU:
             menu.draw(screen, has_active_game)
 
-        elif game_state in (STATE_PLAYING, STATE_PUZZLE, STATE_MAP, STATE_REVEAL, STATE_JOURNAL):
+        elif game_state in (STATE_PLAYING, STATE_PUZZLE, STATE_MAP, STATE_REVEAL, STATE_JOURNAL, STATE_GAME_OVER):
             screen.fill(COLOR_BG)
 
             # 3.1 Room Environment & Decor
@@ -368,6 +415,9 @@ def main():
 
             elif game_state == STATE_REVEAL and active_reveal:
                 active_reveal.draw(screen)
+
+            elif game_state == STATE_GAME_OVER and game_over_modal:
+                game_over_modal.draw(screen)
 
             # 3.7 Subtle Journal Toast Notification (§2.3)
             evidence_mgr.render_toast(screen)

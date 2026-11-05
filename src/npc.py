@@ -141,8 +141,8 @@ class AutonomousNPC:
     def draw(self, surface: pygame.Surface):
         surface.blit(self.image, self.sprite_rect)
 
-    def draw_vision(self, surface: pygame.Surface):
-        """Draw this NPC's 70-degree forward field of view."""
+    def get_vision_points(self) -> list[tuple[int, int]]:
+        """Compute the polygon vertices defining this NPC's viewpoint."""
         facing_angle = {
             "right": 0,
             "down": 90,
@@ -158,10 +158,40 @@ class AutonomousNPC:
             )
             for offset in angles
         ]
-        points = [origin, *arc]
+        return [origin, *arc]
+
+    def draw_vision(self, surface: pygame.Surface):
+        """Draw this NPC's 70-degree forward field of view."""
+        points = self.get_vision_points()
+        origin = points[0]
+        arc = points[1:]
         pygame.draw.polygon(surface, (218, 174, 86, 24), points)
         pygame.draw.lines(surface, (218, 174, 86, 62), False, [origin, arc[0]], 1)
         pygame.draw.lines(surface, (218, 174, 86, 62), False, [origin, arc[-1]], 1)
+
+    def collides_with_vision(self, target, bounds: pygame.Rect | None = None) -> bool:
+        """Check if target (Player, Rect, or point) collides with this viewpoint."""
+        target_hitbox = getattr(target, "hitbox", target if isinstance(target, pygame.Rect) else None)
+        if bounds is not None and target_hitbox is not None:
+            if not bounds.colliderect(target_hitbox):
+                return False
+
+        poly = self.get_vision_points()
+
+        # Point / coordinates
+        if isinstance(target, (tuple, list, pygame.Vector2)):
+            return point_in_polygon(target[0], target[1], poly)
+
+        # Player entity with hitbox and body_rect
+        if hasattr(target, "hitbox") and polygon_collides_with_rect(poly, target.hitbox):
+            return True
+        if hasattr(target, "body_rect") and polygon_collides_with_rect(poly, target.body_rect):
+            return True
+
+        if isinstance(target, pygame.Rect):
+            return polygon_collides_with_rect(poly, target)
+
+        return False
 
 
 class RoomNPCController:
@@ -226,3 +256,95 @@ class RoomNPCController:
         for npc in self.npcs:
             npc.draw_vision(vision_layer)
         surface.blit(vision_layer, (0, 0))
+
+    def check_player_spotted(self, target, bounds: pygame.Rect | None = None) -> bool:
+        """Returns True if the target collides with any NPC's viewpoint points."""
+        for npc in self.npcs:
+            if npc.collides_with_vision(target, bounds=bounds):
+                return True
+        return False
+
+
+def point_in_polygon(x: float, y: float, poly: list[tuple[float, float]]) -> bool:
+    """Ray casting algorithm to determine if point (x, y) is inside polygon."""
+    n = len(poly)
+    if n < 3:
+        return False
+    inside = False
+    p1x, p1y = poly[0]
+    for i in range(1, n + 1):
+        p2x, p2y = poly[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+    return inside
+
+
+def segments_intersect(
+    p1: tuple[float, float],
+    p2: tuple[float, float],
+    p3: tuple[float, float],
+    p4: tuple[float, float],
+) -> bool:
+    """Returns True if line segment p1-p2 intersects line segment p3-p4."""
+    d = (p2[0] - p1[0]) * (p4[1] - p3[1]) - (p2[1] - p1[1]) * (p4[0] - p3[0])
+    if d == 0:
+        return False
+    u = ((p3[0] - p1[0]) * (p4[1] - p3[1]) - (p3[1] - p1[1]) * (p4[0] - p3[0])) / d
+    v = ((p3[0] - p1[0]) * (p2[1] - p1[1]) - (p3[1] - p1[1]) * (p2[0] - p1[0])) / d
+    return (0.0 <= u <= 1.0) and (0.0 <= v <= 1.0)
+
+
+def polygon_collides_with_rect(poly: list[tuple[float, float]], rect: pygame.Rect) -> bool:
+    """Checks collision between an arbitrary 2D polygon and a pygame.Rect."""
+    min_x = min(p[0] for p in poly)
+    max_x = max(p[0] for p in poly)
+    min_y = min(p[1] for p in poly)
+    max_y = max(p[1] for p in poly)
+    poly_bbox = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+    if not rect.colliderect(poly_bbox):
+        return False
+
+    # Check if any polygon vertex is inside rect
+    for p in poly:
+        if rect.collidepoint(p):
+            return True
+
+    # Check if key rect sample points are inside polygon
+    rect_points = [
+        (rect.left, rect.top),
+        (rect.right, rect.top),
+        (rect.right, rect.bottom),
+        (rect.left, rect.bottom),
+        (rect.centerx, rect.centery),
+        (rect.centerx, rect.top),
+        (rect.centerx, rect.bottom),
+        (rect.left, rect.centery),
+        (rect.right, rect.centery),
+    ]
+    for px, py in rect_points:
+        if point_in_polygon(px, py, poly):
+            return True
+
+    # Check if any rect edge intersects any polygon edge
+    rect_edges = [
+        ((rect.left, rect.top), (rect.right, rect.top)),
+        ((rect.right, rect.top), (rect.right, rect.bottom)),
+        ((rect.right, rect.bottom), (rect.left, rect.bottom)),
+        ((rect.left, rect.bottom), (rect.left, rect.top)),
+    ]
+    n = len(poly)
+    for i in range(n):
+        p1 = poly[i]
+        p2 = poly[(i + 1) % n]
+        for r1, r2 in rect_edges:
+            if segments_intersect(p1, p2, r1, r2):
+                return True
+
+    return False
+

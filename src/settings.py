@@ -62,5 +62,6 @@ STATE_MAP = "map"
 STATE_EVIDENCE = "evidence"
 STATE_JOURNAL = "journal"
 STATE_REVEAL = "reveal"
+STATE_GAME_OVER = "game_over"
 
 

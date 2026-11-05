@@ -48,6 +48,16 @@ class Player:
         self.sprite_x = self.hitbox.centerx - self.sprite_w // 2
         self.sprite_y = self.hitbox.bottom - self.sprite_h + 4
 
+    @property
+    def body_rect(self) -> pygame.Rect:
+        """Bounding rectangle covering the detective's standing sprite and body."""
+        return pygame.Rect(
+            self.sprite_x + 8,
+            self.sprite_y + 6,
+            self.sprite_w - 16,
+            self.sprite_h - 8,
+        )
+
     def handle_input(self):
         """Reads keyboard inputs and determines movement vector and facing direction."""
         keys = pygame.key.get_pressed()

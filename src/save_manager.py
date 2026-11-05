@@ -27,8 +27,15 @@ class SaveManager:
         self.save_path = save_path
 
     def has_save(self) -> bool:
-        """Returns True if a valid save file exists on disk."""
-        return os.path.exists(self.save_path) and os.path.getsize(self.save_path) > 0
+        """Returns True if a valid save file exists on disk with active progress."""
+        if not os.path.exists(self.save_path) or os.path.getsize(self.save_path) <= 2:
+            return False
+        try:
+            with open(self.save_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return bool(data and isinstance(data, dict) and data.get("version"))
+        except Exception:
+            return False
 
     def save_game(
         self,
@@ -79,6 +86,16 @@ class SaveManager:
         except Exception as e:
             print(f"Error loading game: {e}")
             return None
+
+    def clear_save(self) -> bool:
+        """Clears the save file by resetting it to an empty JSON structure."""
+        try:
+            with open(self.save_path, "w", encoding="utf-8") as f:
+                f.write("{}")
+            return True
+        except Exception as e:
+            print(f"Error clearing save file: {e}")
+            return False
 
     def delete_save(self) -> bool:
         """Removes the save file if resetting state."""

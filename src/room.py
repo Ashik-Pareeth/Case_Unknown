@@ -103,6 +103,10 @@ class Room:
         """Advance autonomous room patrols without reading or changing player input."""
         self.npc_controller.update(delta_time, self.floor_rect, self.solid_objects)
 
+    def check_player_spotted(self, target) -> bool:
+        """Checks if the target/player collides with any NPC viewpoint points in this room."""
+        return self.npc_controller.check_player_spotted(target, bounds=self.floor_rect)
+
     def _setup_doorways_and_walls(self):
         """Constructs solid walls with doorway passages leaving openings for travel."""
         doors_config = self.data.get("doors", [])
