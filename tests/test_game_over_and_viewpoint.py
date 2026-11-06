@@ -156,6 +156,20 @@ class TestGameOverAndViewpoint(unittest.TestCase):
         action = game_over.handle_event(click_retry)
         self.assertEqual(action, "RETRY")
 
+        # Mouse click on MENU button
+        click_menu = pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN,
+            {"button": 1, "pos": (game_over.btn_menu_rect.centerx, game_over.btn_menu_rect.centery)},
+        )
+        action = game_over.handle_event(click_menu)
+        self.assertEqual(action, "MENU")
+
+        # Left / Right keys toggle selection
+        key_left = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_LEFT})
+        game_over.selected_idx = 0
+        game_over.handle_event(key_left)
+        self.assertEqual(game_over.selected_idx, 1)
+
     def test_full_detection_and_save_clearing_integration(self):
         """Simulates full detection cycle: save game -> player collides with NPC cone -> game over -> save cleared."""
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tf:
