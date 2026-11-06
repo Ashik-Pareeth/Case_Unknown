@@ -96,6 +96,9 @@ def main():
     door_hints_shown = set()
     active_reveal = None
     game_over_modal = None
+    room_entry_grace = 0.8
+    detection_timer = 0.0
+    DETECTION_THRESHOLD = 0.25
     game_state = STATE_MENU
 
     running = True
@@ -140,6 +143,8 @@ def main():
                     )
                     player = Player(start_x=SCREEN_WIDTH // 2, start_y=420)
                     has_active_game = True
+                    room_entry_grace = 0.8
+                    detection_timer = 0.0
                     game_state = STATE_PLAYING
                     save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
                 elif action == "MAP":
@@ -242,6 +247,8 @@ def main():
                         )
                         player = Player(start_x=SCREEN_WIDTH // 2, start_y=420)
                         has_active_game = True
+                        room_entry_grace = 0.8
+                        detection_timer = 0.0
                         game_over_modal = None
                         game_state = STATE_PLAYING
                         save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
@@ -313,15 +320,24 @@ def main():
             player.update(delta_time, room.solid_objects)
             interaction_mgr.update(delta_time, player.get_interaction_reach())
 
-            # Check viewpoint collision with patrolling NPCs
-            if room.check_player_spotted(player):
-                save_mgr.clear_save()
-                has_active_game = False
-                interaction_mgr.active_evidence = None
-                interaction_mgr.is_inspecting = False
-                game_over_modal = GameOverWindow()
-                game_state = STATE_GAME_OVER
-                continue
+            if room_entry_grace > 0:
+                room_entry_grace = max(0.0, room_entry_grace - delta_time)
+
+            # Check viewpoint collision with patrolling NPCs (requires physical entry into viewpoint)
+            spotted = (room_entry_grace <= 0) and room.check_player_spotted(player)
+            if spotted:
+                detection_timer += delta_time
+                if detection_timer >= DETECTION_THRESHOLD:
+                    save_mgr.clear_save()
+                    has_active_game = False
+                    interaction_mgr.active_evidence = None
+                    interaction_mgr.is_inspecting = False
+                    game_over_modal = GameOverWindow()
+                    game_state = STATE_GAME_OVER
+                    detection_timer = 0.0
+                    continue
+            else:
+                detection_timer = max(0.0, detection_timer - delta_time * 2.0)
 
             # Door notices appear immediately and repeated contact extends the
             # same toast instead of adding another one to the queue.
@@ -364,6 +380,8 @@ def main():
                 target_data = ROOMS_DATA.get(current_room_id, ROOMS_DATA["crime_scene"])
                 room = Room(interaction_mgr, current_room_id, target_data, treasure_mgr, evidence_mgr=evidence_mgr)
                 save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
+                room_entry_grace = 0.8
+                detection_timer = 0.0
 
         # =============================================================
         # 3. RENDERING
@@ -376,7 +394,12 @@ def main():
 
             # 3.1 Room Environment & Decor
             room.draw_background(screen)
-            room.npc_controller.draw_vision(screen, room.floor_rect)
+            alerted_npcs = set()
+            if game_state == STATE_PLAYING and room_entry_grace <= 0:
+                for npc in room.npc_controller.npcs:
+                    if npc.collides_with_vision(player, bounds=room.floor_rect, solid_objects=room.solid_objects):
+                        alerted_npcs.add(npc)
+            room.npc_controller.draw_vision(screen, room.floor_rect, alerted_npcs=alerted_npcs)
 
             # 3.2 Depth-Sorted Entities
             draw_queue = []

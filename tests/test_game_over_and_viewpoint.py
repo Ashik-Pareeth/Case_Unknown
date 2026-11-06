@@ -65,6 +65,15 @@ class TestGameOverAndViewpoint(unittest.TestCase):
         rect_in_front = pygame.Rect(350, 240, 20, 20)
         self.assertTrue(npc.collides_with_vision(rect_in_front))
 
+        # Detective walking below/outside the cone (should NOT be detected)
+        detective_below_cone = Player(start_x=380, start_y=350)
+        self.assertFalse(npc.collides_with_vision(detective_below_cone))
+
+        # Detective behind a solid desk/obstacle (should NOT be detected)
+        desk = pygame.Rect(340, 230, 30, 50)
+        detective_behind_desk = Player(start_x=390, start_y=255)
+        self.assertFalse(npc.collides_with_vision(detective_behind_desk, solid_objects=[desk]))
+
     def test_room_npc_controller_spotted(self):
         bounds = pygame.Rect(60, 130, 840, 460)
         solid_objects = []

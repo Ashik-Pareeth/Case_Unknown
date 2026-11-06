@@ -105,7 +105,11 @@ class Room:
 
     def check_player_spotted(self, target) -> bool:
         """Checks if the target/player collides with any NPC viewpoint points in this room."""
-        return self.npc_controller.check_player_spotted(target, bounds=self.floor_rect)
+        return self.npc_controller.check_player_spotted(
+            target,
+            bounds=self.floor_rect,
+            solid_objects=self.solid_objects,
+        )
 
     def _setup_doorways_and_walls(self):
         """Constructs solid walls with doorway passages leaving openings for travel."""

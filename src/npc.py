@@ -86,9 +86,30 @@ class AutonomousNPC:
             return "down" if dy > 0 else "up"
         return None
 
+    def _is_facing_door(self, direction: str) -> bool:
+        """Check if facing in direction points directly towards any doorway landing spot."""
+        if not self.door_targets:
+            return False
+        origin = (round(self.pos.x), round(self.pos.y - 48))
+        facing_angles = {"right": 0, "down": 90, "left": 180, "up": 270}
+        facing = facing_angles[direction]
+        for target in self.door_targets:
+            dx = target[0] - origin[0]
+            dy = target[1] - origin[1]
+            dist = math.hypot(dx, dy)
+            if dist <= self.vision_range + 30:
+                angle_to_target = math.degrees(math.atan2(dy, dx)) % 360
+                diff = (angle_to_target - facing + 180) % 360 - 180
+                if abs(diff) <= self.vision_half_angle + 10:
+                    return True
+        return False
+
     def _safe_directions(self):
-        doorward = self._doorward_direction()
-        return [direction for direction in _DIRECTIONS if direction != doorward]
+        safe = [d for d in _DIRECTIONS if not self._is_facing_door(d)]
+        if not safe:
+            doorward = self._doorward_direction()
+            safe = [d for d in _DIRECTIONS if d != doorward]
+        return safe if safe else list(_DIRECTIONS)
 
     def _turn(self, bounds: pygame.Rect):
         choices = [direction for direction in self._safe_directions() if direction != self.direction]
@@ -160,38 +181,70 @@ class AutonomousNPC:
         ]
         return [origin, *arc]
 
-    def draw_vision(self, surface: pygame.Surface):
+    def draw_vision(self, surface: pygame.Surface, is_alert: bool = False):
         """Draw this NPC's 70-degree forward field of view."""
         points = self.get_vision_points()
         origin = points[0]
         arc = points[1:]
-        pygame.draw.polygon(surface, (218, 174, 86, 24), points)
-        pygame.draw.lines(surface, (218, 174, 86, 62), False, [origin, arc[0]], 1)
-        pygame.draw.lines(surface, (218, 174, 86, 62), False, [origin, arc[-1]], 1)
+        poly_color = (235, 65, 65, 48) if is_alert else (218, 174, 86, 24)
+        line_color = (245, 80, 80, 110) if is_alert else (218, 174, 86, 62)
+        pygame.draw.polygon(surface, poly_color, points)
+        pygame.draw.lines(surface, line_color, False, [origin, arc[0]], 1)
+        pygame.draw.lines(surface, line_color, False, [origin, arc[-1]], 1)
 
-    def collides_with_vision(self, target, bounds: pygame.Rect | None = None) -> bool:
+    def collides_with_vision(
+        self,
+        target,
+        bounds: pygame.Rect | None = None,
+        solid_objects: list[pygame.Rect] | None = None,
+    ) -> bool:
         """Check if target (Player, Rect, or point) collides with this viewpoint."""
-        target_hitbox = getattr(target, "hitbox", target if isinstance(target, pygame.Rect) else None)
-        if bounds is not None and target_hitbox is not None:
-            if not bounds.colliderect(target_hitbox):
-                return False
-
         poly = self.get_vision_points()
+        origin = poly[0]
 
-        # Point / coordinates
+        # 1. Point / coordinates
         if isinstance(target, (tuple, list, pygame.Vector2)):
-            return point_in_polygon(target[0], target[1], poly)
-
-        # Player entity with hitbox and body_rect
-        if hasattr(target, "hitbox") and polygon_collides_with_rect(poly, target.hitbox):
+            pt = (round(target[0]), round(target[1]))
+            if bounds is not None and not bounds.collidepoint(pt):
+                return False
+            if not point_in_polygon(pt[0], pt[1], poly):
+                return False
+            if solid_objects:
+                for obj in solid_objects:
+                    if obj.clipline(origin, pt):
+                        return False
             return True
-        if hasattr(target, "body_rect") and polygon_collides_with_rect(poly, target.body_rect):
-            return True
 
-        if isinstance(target, pygame.Rect):
-            return polygon_collides_with_rect(poly, target)
+        # 2. Player entity: evaluate ground contact point and core footprint
+        hitbox = getattr(target, "hitbox", target if isinstance(target, pygame.Rect) else None)
+        if hitbox is None:
+            return False
 
-        return False
+        if bounds is not None and not bounds.colliderect(hitbox):
+            return False
+
+        target_pos = (
+            (round(target.pos.x), round(target.pos.y))
+            if hasattr(target, "pos")
+            else hitbox.center
+        )
+
+        # Detective has only entered the viewpoint if their ground position (feet)
+        # or core ground contact area is physically inside the viewpoint polygon.
+        is_inside = point_in_polygon(target_pos[0], target_pos[1], poly) or (
+            polygon_collides_with_rect(poly, hitbox.inflate(-8, -4))
+        )
+        if not is_inside:
+            return False
+
+        # Line of sight check: ensure solid walls/furniture block detection
+        if solid_objects:
+            for obj in solid_objects:
+                if obj.clipline(origin, target_pos):
+                    return False
+
+        return True
+
 
 
 class RoomNPCController:
@@ -248,19 +301,25 @@ class RoomNPCController:
             for npc in self.npcs
         ]
 
-    def draw_vision(self, surface: pygame.Surface, bounds: pygame.Rect):
+    def draw_vision(self, surface: pygame.Surface, bounds: pygame.Rect, alerted_npcs: set[AutonomousNPC] | None = None):
         if not self.npcs:
             return
         vision_layer = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
         vision_layer.set_clip(bounds)
         for npc in self.npcs:
-            npc.draw_vision(vision_layer)
+            is_alert = bool(alerted_npcs and npc in alerted_npcs)
+            npc.draw_vision(vision_layer, is_alert=is_alert)
         surface.blit(vision_layer, (0, 0))
 
-    def check_player_spotted(self, target, bounds: pygame.Rect | None = None) -> bool:
+    def check_player_spotted(
+        self,
+        target,
+        bounds: pygame.Rect | None = None,
+        solid_objects: list[pygame.Rect] | None = None,
+    ) -> bool:
         """Returns True if the target collides with any NPC's viewpoint points."""
         for npc in self.npcs:
-            if npc.collides_with_vision(target, bounds=bounds):
+            if npc.collides_with_vision(target, bounds=bounds, solid_objects=solid_objects):
                 return True
         return False
 
