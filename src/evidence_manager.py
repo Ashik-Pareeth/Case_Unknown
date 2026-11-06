@@ -7,7 +7,7 @@ Strictly adheres to directives.txt:
 - Manages investigative Questions, Clue Connections, and Progression Gates.
 - Provides subtle, non-intrusive atmospheric HUD notifications on journal updates.
 """
-
+gffff
 from __future__ import annotations
 from dataclasses import dataclass, field
 import pygame
