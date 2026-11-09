@@ -22,15 +22,66 @@ NPC_PATROLS = {
     "restricted_office": (330, 455),
 }
 
+# Predetermined, invisible multi-point looping patrol routes for each room.
+# Each room features up to 3 distinct non-trivial circuits winding around furniture.
+NPC_PATROL_PATHS: dict[str, list[list[tuple[int, int]]]] = {
+    "office": [
+        [(340, 455), (320, 380), (240, 320), (240, 220), (240, 185), (340, 185), (340, 270), (220, 270), (310, 360), (310, 520), (360, 520)],
+        [(720, 240), (750, 240), (750, 340), (750, 440), (640, 470), (600, 410), (600, 250), (700, 250)],
+        [(350, 240), (480, 230), (580, 240), (590, 380), (480, 390), (360, 380), (350, 310)],
+    ],
+    "archive": [
+        [(290, 185), (350, 220), (260, 240), (170, 250), (260, 320), (340, 280), (340, 430), (260, 450), (180, 410), (290, 370), (290, 240)],
+        [(720, 200), (740, 270), (700, 380), (700, 440), (620, 480), (610, 400), (610, 260), (700, 240)],
+        [(360, 250), (480, 240), (590, 250), (600, 410), (480, 410), (360, 410), (350, 330)],
+    ],
+    "morgue": [
+        [(230, 180), (340, 180), (350, 280), (250, 310), (220, 440), (330, 460), (350, 370), (240, 360), (210, 260)],
+        [(710, 180), (740, 270), (710, 380), (690, 480), (600, 480), (590, 380), (600, 250), (680, 210)],
+        [(360, 230), (470, 220), (580, 230), (590, 370), (480, 380), (360, 370), (350, 300)],
+    ],
+    "lockup": [
+        [(140, 220), (260, 220), (370, 250), (370, 390), (270, 430), (130, 430), (120, 300)],
+        [(520, 250), (660, 250), (790, 250), (800, 380), (780, 440), (780, 515), (630, 515), (630, 410), (530, 390), (500, 310)],
+        [(390, 260), (480, 280), (550, 310), (480, 390), (390, 450), (480, 470), (550, 420), (450, 340)],
+    ],
+    "interrogation": [
+        [(220, 180), (340, 180), (340, 260), (220, 270), (180, 380), (270, 460), (340, 410), (310, 320), (210, 280)],
+        [(700, 190), (740, 230), (710, 370), (750, 420), (680, 470), (600, 450), (590, 340), (600, 220), (690, 210)],
+        [(360, 220), (470, 210), (570, 220), (580, 370), (470, 380), (360, 370), (350, 290)],
+    ],
+    "records_room": [
+        [(310, 185), (350, 250), (280, 270), (180, 270), (150, 380), (240, 460), (330, 450), (340, 340), (280, 300)],
+        [(530, 250), (650, 240), (780, 240), (800, 390), (780, 480), (660, 480), (540, 440), (530, 330)],
+        [(380, 230), (470, 240), (540, 280), (520, 400), (460, 460), (380, 420), (420, 320)],
+    ],
+    "recording_room": [
+        [(180, 200), (310, 200), (330, 290), (250, 320), (180, 390), (260, 470), (340, 450), (330, 370), (220, 320)],
+        [(680, 190), (730, 240), (710, 340), (750, 420), (720, 480), (620, 470), (600, 380), (610, 250)],
+        [(360, 240), (480, 230), (590, 240), (600, 410), (460, 420), (360, 410), (350, 310)],
+    ],
+    "restricted_office": [
+        [(220, 200), (340, 200), (340, 290), (250, 310), (320, 370), (320, 520), (360, 520), (360, 440), (330, 380), (240, 320)],
+        [(690, 180), (730, 230), (740, 350), (750, 470), (640, 480), (610, 400), (610, 250), (680, 210)],
+        [(360, 230), (480, 220), (580, 230), (590, 410), (460, 410), (360, 400), (350, 300)],
+    ],
+}
+
 _DIRECTIONS = ("down", "left", "up", "right")
 NPC_COUNT_PER_ROOM = 3
 
 
 class AutonomousNPC:
-    """A patrolling NPC that walks, pauses for two seconds, then turns."""
+    """A patrolling NPC that moves in a predetermined, invisible loop.
+    
+    Guarantees non-extended doorward facing: never stays pointed at any doorway for
+    longer than a brief fraction of a second (<0.30s) while actively traversing, and
+    never points towards doorways while paused or idling.
+    """
 
-    def __init__(self, start_pos: tuple[int, int], palette_index: int = 0, seed: int | None = None,
-                 door_targets: tuple[tuple[int, int], ...] = ()):
+    def __init__(self, start_pos: tuple[int, int] | list[tuple[int, int]], palette_index: int = 0,
+                 seed: int | None = None, door_targets: tuple[tuple[int, int], ...] = (),
+                 path: list[tuple[int, int]] | None = None):
         self.animations = get_npc_animations(palette_index)
         self.scaled_animations = {
             direction: {
@@ -39,21 +90,33 @@ class AutonomousNPC:
             }
             for direction, states in self.animations.items()
         }
-        self.pos = pygame.Vector2(start_pos)
+
+        if path is not None:
+            self.path = [tuple(p) for p in path]
+        elif isinstance(start_pos, (list, tuple)) and start_pos and isinstance(start_pos[0], (list, tuple)):
+            self.path = [tuple(p) for p in start_pos]
+        else:
+            self.path = [tuple(start_pos)]
+
+        self.waypoint_index = 0
+        self.pos = pygame.Vector2(self.path[0])
         self.hitbox = pygame.Rect(0, 0, 24, 14)
         self.sprite_size = (60, 76)
         self.door_targets = door_targets
         self.rng = random.Random(seed)
-        self.state = "idle"
         self.frame_index = 0
         self.anim_timer = 0.0
-        self.phase = "walk"
-        self.phase_timer = self.rng.uniform(1.0, 2.4)
         self.speed = 58.0
+        self.arrival_dist = 6.0
         self.vision_range = 190
         self.vision_half_angle = 35
-        self.direction = self.rng.choice(self._safe_directions())
+        self.door_facing_timer = 0.0
+        self.gaze_override: str | None = None
+
+        self.phase = "walk"
+        self.phase_timer = 0.0
         self.state = "walk"
+        self.direction = self._choose_pause_direction()
         self.image = None
         self._update_rects()
         self._set_image()
@@ -72,7 +135,34 @@ class AutonomousNPC:
         self.frame_index %= len(frames)
         self.image = frames[self.frame_index]
 
-    def _doorward_direction(self):
+    def is_pointing_at_door(self, direction: str | None = None, cone_angle: float = 38.0) -> bool:
+        """Returns True if the given (or current) facing direction points towards any doorway."""
+        if not self.door_targets:
+            return False
+        d = direction or self.direction
+        facing_angles = {"right": 0, "down": 90, "left": 180, "up": 270}
+        fa = facing_angles.get(d, 0)
+        for dx, dy in self.door_targets:
+            dist = math.hypot(dx - self.pos.x, dy - self.pos.y)
+            ang = math.degrees(math.atan2(dy - self.pos.y, dx - self.pos.x)) % 360
+            diff = abs((ang - fa + 180) % 360 - 180)
+            # Within vision reach and cone angle
+            if dist <= self.vision_range + 35 and diff <= cone_angle:
+                return True
+            # Direct corridor / hallway alignment
+            if dist > self.vision_range + 35:
+                # Top / Bottom door corridor
+                if abs(dx - 480) < 15 and abs(self.pos.x - dx) <= 55:
+                    if (dy < self.pos.y and d == "up") or (dy > self.pos.y and d == "down"):
+                        return True
+                # Left / Right door corridor
+                if abs(dy - 348) < 15 and abs(self.pos.y - dy) <= 55:
+                    if (dx < self.pos.x and d == "left") or (dx > self.pos.x and d == "right"):
+                        return True
+        return False
+
+    def _doorward_direction(self) -> str | None:
+        """Returns the single cardinal direction most directly pointing to the nearest doorway."""
         if not self.door_targets:
             return None
         target_x, target_y = min(
@@ -104,53 +194,110 @@ class AutonomousNPC:
                     return True
         return False
 
-    def _safe_directions(self):
-        safe = [d for d in _DIRECTIONS if not self._is_facing_door(d)]
+    def _safe_directions(self) -> list[str]:
+        """Cardinal directions that do not point toward any doorway."""
+        safe = [d for d in _DIRECTIONS if not self.is_pointing_at_door(d) and not self._is_facing_door(d)]
+        if not safe:
+            safe = [d for d in _DIRECTIONS if not self.is_pointing_at_door(d)]
         if not safe:
             doorward = self._doorward_direction()
             safe = [d for d in _DIRECTIONS if d != doorward]
         return safe if safe else list(_DIRECTIONS)
 
-    def _turn(self, bounds: pygame.Rect):
-        choices = [direction for direction in self._safe_directions() if direction != self.direction]
-        if not choices:
-            choices = self._safe_directions()
-        self.direction = self.rng.choice(choices)
-        self.state = "idle"
-        self.phase = "wait"
-        self.phase_timer = 2.0
-        self.frame_index = 0
+    def _choose_pause_direction(self) -> str:
+        """Select a direction safe from pointing at any door when stopped."""
+        safe = self._safe_directions()
+        return self.rng.choice(safe)
+
+    def _safe_gaze_direction(self, current_dir: str) -> str:
+        """Find a perpendicular safe direction to look away from a doorway."""
+        safe = self._safe_directions()
+        perp = {
+            "up": ["left", "right"],
+            "down": ["left", "right"],
+            "left": ["up", "down"],
+            "right": ["up", "down"],
+        }.get(current_dir, ["left", "right"])
+        for p in perp:
+            if p in safe:
+                return p
+        return safe[0] if safe else current_dir
 
     def update(self, delta_time: float, bounds: pygame.Rect, solid_objects: list[pygame.Rect], other_npcs=()):
-        self.phase_timer -= delta_time
-        if self.phase == "wait":
-            if self.phase_timer <= 0:
-                self.phase = "walk"
-                self.phase_timer = self.rng.uniform(1.2, 2.8)
-                if self.direction not in self._safe_directions():
-                    self.direction = self.rng.choice(self._safe_directions())
-                self.state = "walk"
+        if len(self.path) > 1:
+            target = self.path[(self.waypoint_index + 1) % len(self.path)]
+            if self.phase == "wait":
+                self.phase_timer -= delta_time
+                # Strictly enforce never pointing to any door during pauses
+                if self.is_pointing_at_door(self.direction):
+                    self.direction = self._choose_pause_direction()
+                if self.phase_timer <= 0:
+                    self.phase = "walk"
+                    self.state = "walk"
+                    self.gaze_override = None
+                    self.door_facing_timer = 0.0
+            else:
+                dx = target[0] - self.pos.x
+                dy = target[1] - self.pos.y
+                dist = math.hypot(dx, dy)
+                if dist <= max(self.arrival_dist, self.speed * delta_time):
+                    # Arrived at waypoint
+                    self.pos.x = target[0]
+                    self.pos.y = target[1]
+                    self.waypoint_index = (self.waypoint_index + 1) % len(self.path)
+                    self.door_facing_timer = 0.0
+                    self.gaze_override = None
+                    # Periodic brief pause to inspect room (only looking in safe directions)
+                    if self.rng.random() < 0.40:
+                        self.phase = "wait"
+                        self.phase_timer = self.rng.uniform(0.8, 1.4)
+                        self.state = "idle"
+                        self.direction = self._choose_pause_direction()
+                        self.frame_index = 0
+                else:
+                    self.state = "walk"
+                    if abs(dx) >= abs(dy):
+                        move_dir = "right" if dx > 0 else "left"
+                    else:
+                        move_dir = "down" if dy > 0 else "up"
+
+                    current_facing = self.gaze_override or move_dir
+                    if self.is_pointing_at_door(current_facing):
+                        self.door_facing_timer += delta_time
+                        if self.door_facing_timer >= 0.30:
+                            # Break door line-of-sight: divert gaze to a safe direction
+                            self.gaze_override = self._safe_gaze_direction(move_dir)
+                            current_facing = self.gaze_override
+                            self.door_facing_timer = 0.0
+                    else:
+                        self.door_facing_timer = 0.0
+                        if self.gaze_override and not self.is_pointing_at_door(move_dir):
+                            self.gaze_override = None
+                            current_facing = move_dir
+                        elif not self.gaze_override:
+                            current_facing = move_dir
+
+                    self.direction = current_facing
+
+                    step = min(dist, self.speed * delta_time)
+                    old_pos = self.pos.copy()
+                    self.pos.x += (dx / dist) * step
+                    self.pos.y += (dy / dist) * step
+                    self._update_rects()
+
+                    # Yield if encountering another NPC
+                    if any(self.hitbox.colliderect(obj) for obj in other_npcs):
+                        self.pos = old_pos
+                        self._update_rects()
+                        self.phase = "wait"
+                        self.phase_timer = 0.5
+                        self.state = "idle"
+                        self.direction = self._choose_pause_direction()
         else:
-            if self.direction not in self._safe_directions():
-                self._turn(bounds)
-                self._set_image()
-                return
-            movement = {
-                "down": (0, 1), "up": (0, -1),
-                "left": (-1, 0), "right": (1, 0),
-            }[self.direction]
-            old_pos = self.pos.copy()
-            self.pos.x += movement[0] * self.speed * delta_time
-            self.pos.y += movement[1] * self.speed * delta_time
-            self._update_rects()
-            if (not bounds.contains(self.hitbox)
-                    or any(self.hitbox.colliderect(obj) for obj in solid_objects)
-                    or any(self.hitbox.colliderect(obj) for obj in other_npcs)):
-                self.pos = old_pos
-                self._update_rects()
-                self._turn(bounds)
-            elif self.phase_timer <= 0:
-                self._turn(bounds)
+            # Single-point path fallback
+            self.phase_timer -= delta_time
+            if self.is_pointing_at_door(self.direction):
+                self.direction = self._choose_pause_direction()
 
         self.anim_timer += delta_time
         frame_time = 0.18 if self.state == "walk" else 0.5
@@ -251,14 +398,10 @@ class RoomNPCController:
     """Owns independent NPCs for one room and updates their patrols."""
 
     def __init__(self, room_id: str, bounds: pygame.Rect, solid_objects: list[pygame.Rect]):
-        patrol = NPC_PATROLS.get(room_id)
         self.npcs = []
         self._seed = sum(map(ord, room_id))
-        if patrol is None:
-            return
 
-        start_pos = patrol
-        door_walls = [door["wall"] for door in ROOMS_DATA[room_id].get("doors", [])]
+        door_walls = [door["wall"] for door in ROOMS_DATA.get(room_id, {}).get("doors", [])]
         door_targets = tuple({
             "left": (bounds.left, bounds.centery),
             "right": (bounds.right, bounds.centery),
@@ -266,29 +409,24 @@ class RoomNPCController:
             "bottom": (bounds.centerx, bounds.bottom),
         }[wall] for wall in door_walls)
 
-        candidates = [(x, y)
-            for y in range(bounds.top + 48, bounds.bottom - 45, 46)
-            for x in range(bounds.left + 48, bounds.right - 45, 52)]
-        random.Random(self._seed).shuffle(candidates)
-        candidates.insert(0, start_pos)
-        occupied = []
-        for candidate in candidates:
-            spawn_hitbox = pygame.Rect(0, 0, 24, 14)
-            spawn_hitbox.center = candidate
-            near_door = any(pygame.Vector2(candidate).distance_to(target) < 62 for target in door_targets)
-            too_close = any(pygame.Vector2(candidate).distance_to(pos) < 68 for pos in occupied)
-            if (not bounds.contains(spawn_hitbox) or near_door or too_close
-                    or any(spawn_hitbox.colliderect(obj) for obj in solid_objects)):
-                continue
-            index = len(self.npcs)
+        room_paths = NPC_PATROL_PATHS.get(room_id)
+        if room_paths:
+            for idx in range(min(NPC_COUNT_PER_ROOM, len(room_paths))):
+                path = room_paths[idx]
+                self.npcs.append(AutonomousNPC(
+                    start_pos=path,
+                    palette_index=idx % 2,
+                    seed=self._seed + idx * 7919,
+                    door_targets=door_targets,
+                ))
+        elif room_id in NPC_PATROLS:
+            start_pos = NPC_PATROLS[room_id]
             self.npcs.append(AutonomousNPC(
-                candidate, index % 2,
-                seed=self._seed + index * 7919 + random.randrange(1_000_000),
+                start_pos=start_pos,
+                palette_index=0,
+                seed=self._seed,
                 door_targets=door_targets,
             ))
-            occupied.append(candidate)
-            if len(self.npcs) >= NPC_COUNT_PER_ROOM:
-                break
 
     def update(self, delta_time: float, bounds: pygame.Rect, solid_objects: list[pygame.Rect]):
         for index, npc in enumerate(self.npcs):
@@ -406,4 +544,3 @@ def polygon_collides_with_rect(poly: list[tuple[float, float]], rect: pygame.Rec
                 return True
 
     return False
-
