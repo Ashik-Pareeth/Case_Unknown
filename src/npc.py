@@ -9,7 +9,6 @@ import pygame
 from assets.npcs import get_npc_animations
 from src.rooms_data import ROOMS_DATA
 
-
 NPC_PATROLS = {
     # The opening crime scene intentionally stays empty.
     "office": (340, 455),
@@ -26,44 +25,267 @@ NPC_PATROLS = {
 # Each room features up to 3 distinct non-trivial circuits winding around furniture.
 NPC_PATROL_PATHS: dict[str, list[list[tuple[int, int]]]] = {
     "office": [
-        [(340, 455), (320, 380), (240, 320), (240, 220), (240, 185), (340, 185), (340, 270), (220, 270), (310, 360), (310, 520), (360, 520)],
-        [(720, 240), (750, 240), (750, 340), (750, 440), (640, 470), (600, 410), (600, 250), (700, 250)],
-        [(350, 240), (480, 230), (580, 240), (590, 380), (480, 390), (360, 380), (350, 310)],
+        [
+            (340, 455),
+            (320, 380),
+            (240, 320),
+            (240, 220),
+            (240, 185),
+            (340, 185),
+            (340, 270),
+            (220, 270),
+            (310, 360),
+            (310, 520),
+            (360, 520),
+        ],
+        [
+            (720, 240),
+            (750, 240),
+            (750, 340),
+            (750, 440),
+            (640, 470),
+            (600, 410),
+            (600, 250),
+            (700, 250),
+        ],
+        [
+            (350, 240),
+            (480, 230),
+            (580, 240),
+            (590, 380),
+            (480, 390),
+            (360, 380),
+            (350, 310),
+        ],
     ],
     "archive": [
-        [(290, 185), (350, 220), (260, 240), (170, 250), (260, 320), (340, 280), (340, 430), (260, 450), (180, 410), (290, 370), (290, 240)],
-        [(720, 200), (740, 270), (700, 380), (700, 440), (620, 480), (610, 400), (610, 260), (700, 240)],
-        [(360, 250), (480, 240), (590, 250), (600, 410), (480, 410), (360, 410), (350, 330)],
+        [
+            (290, 185),
+            (350, 220),
+            (260, 240),
+            (170, 250),
+            (260, 320),
+            (340, 280),
+            (340, 430),
+            (260, 450),
+            (180, 410),
+            (290, 370),
+            (290, 240),
+        ],
+        [
+            (720, 200),
+            (740, 270),
+            (700, 380),
+            (700, 440),
+            (620, 480),
+            (610, 400),
+            (610, 260),
+            (700, 240),
+        ],
+        [
+            (360, 250),
+            (480, 240),
+            (590, 250),
+            (600, 410),
+            (480, 410),
+            (360, 410),
+            (350, 330),
+        ],
     ],
     "morgue": [
-        [(230, 180), (340, 180), (350, 280), (250, 310), (220, 440), (330, 460), (350, 370), (240, 360), (210, 260)],
-        [(710, 180), (740, 270), (710, 380), (690, 480), (600, 480), (590, 380), (600, 250), (680, 210)],
-        [(360, 230), (470, 220), (580, 230), (590, 370), (480, 380), (360, 370), (350, 300)],
+        [
+            (230, 180),
+            (340, 180),
+            (350, 280),
+            (250, 310),
+            (220, 440),
+            (330, 460),
+            (350, 370),
+            (240, 360),
+            (210, 260),
+        ],
+        [
+            (710, 180),
+            (740, 270),
+            (710, 380),
+            (690, 480),
+            (600, 480),
+            (590, 380),
+            (600, 250),
+            (680, 210),
+        ],
+        [
+            (360, 230),
+            (470, 220),
+            (580, 230),
+            (590, 370),
+            (480, 380),
+            (360, 370),
+            (350, 300),
+        ],
     ],
     "lockup": [
-        [(140, 220), (260, 220), (370, 250), (370, 390), (270, 430), (130, 430), (120, 300)],
-        [(520, 250), (660, 250), (790, 250), (800, 380), (780, 440), (780, 515), (630, 515), (630, 410), (530, 390), (500, 310)],
-        [(390, 260), (480, 280), (550, 310), (480, 390), (390, 450), (480, 470), (550, 420), (450, 340)],
+        [
+            (140, 220),
+            (260, 220),
+            (370, 250),
+            (370, 390),
+            (270, 430),
+            (130, 430),
+            (120, 300),
+        ],
+        [
+            (520, 250),
+            (660, 250),
+            (790, 250),
+            (800, 380),
+            (780, 440),
+            (780, 515),
+            (630, 515),
+            (630, 410),
+            (530, 390),
+            (500, 310),
+        ],
+        [
+            (390, 260),
+            (480, 280),
+            (550, 310),
+            (480, 390),
+            (390, 450),
+            (480, 470),
+            (550, 420),
+            (450, 340),
+        ],
     ],
     "interrogation": [
-        [(220, 180), (340, 180), (340, 260), (220, 270), (180, 380), (270, 460), (340, 410), (310, 320), (210, 280)],
-        [(700, 190), (740, 230), (710, 370), (750, 420), (680, 470), (600, 450), (590, 340), (600, 220), (690, 210)],
-        [(360, 220), (470, 210), (570, 220), (580, 370), (470, 380), (360, 370), (350, 290)],
+        [
+            (220, 180),
+            (340, 180),
+            (340, 260),
+            (220, 270),
+            (180, 380),
+            (270, 460),
+            (340, 410),
+            (310, 320),
+            (210, 280),
+        ],
+        [
+            (700, 190),
+            (740, 230),
+            (710, 370),
+            (750, 420),
+            (680, 470),
+            (600, 450),
+            (590, 340),
+            (600, 220),
+            (690, 210),
+        ],
+        [
+            (360, 220),
+            (470, 210),
+            (570, 220),
+            (580, 370),
+            (470, 380),
+            (360, 370),
+            (350, 290),
+        ],
     ],
     "records_room": [
-        [(310, 185), (350, 250), (280, 270), (180, 270), (150, 380), (240, 460), (330, 450), (340, 340), (280, 300)],
-        [(530, 250), (650, 240), (780, 240), (800, 390), (780, 480), (660, 480), (540, 440), (530, 330)],
-        [(380, 230), (470, 240), (540, 280), (520, 400), (460, 460), (380, 420), (420, 320)],
+        [
+            (310, 185),
+            (350, 250),
+            (280, 270),
+            (180, 270),
+            (150, 380),
+            (240, 460),
+            (330, 450),
+            (340, 340),
+            (280, 300),
+        ],
+        [
+            (530, 250),
+            (650, 240),
+            (780, 240),
+            (800, 390),
+            (780, 480),
+            (660, 480),
+            (540, 440),
+            (530, 330),
+        ],
+        [
+            (380, 230),
+            (470, 240),
+            (540, 280),
+            (520, 400),
+            (460, 460),
+            (380, 420),
+            (420, 320),
+        ],
     ],
     "recording_room": [
-        [(180, 200), (310, 200), (330, 290), (250, 320), (180, 390), (260, 470), (340, 450), (330, 370), (220, 320)],
-        [(680, 190), (730, 240), (710, 340), (750, 420), (720, 480), (620, 470), (600, 380), (610, 250)],
-        [(360, 240), (480, 230), (590, 240), (600, 410), (460, 420), (360, 410), (350, 310)],
+        [
+            (180, 200),
+            (310, 200),
+            (330, 290),
+            (250, 320),
+            (180, 390),
+            (260, 470),
+            (340, 450),
+            (330, 370),
+            (220, 320),
+        ],
+        [
+            (680, 190),
+            (730, 240),
+            (710, 340),
+            (750, 420),
+            (720, 480),
+            (620, 470),
+            (600, 380),
+            (610, 250),
+        ],
+        [
+            (360, 240),
+            (480, 230),
+            (590, 240),
+            (600, 410),
+            (460, 420),
+            (360, 410),
+            (350, 310),
+        ],
     ],
     "restricted_office": [
-        [(220, 200), (340, 200), (340, 290), (250, 310), (320, 370), (320, 520), (360, 520), (360, 440), (330, 380), (240, 320)],
-        [(690, 180), (730, 230), (740, 350), (750, 470), (640, 480), (610, 400), (610, 250), (680, 210)],
-        [(360, 230), (480, 220), (580, 230), (590, 410), (460, 410), (360, 400), (350, 300)],
+        [
+            (220, 200),
+            (340, 200),
+            (340, 290),
+            (250, 310),
+            (320, 370),
+            (320, 520),
+            (360, 520),
+            (360, 440),
+            (330, 380),
+            (240, 320),
+        ],
+        [
+            (690, 180),
+            (730, 230),
+            (740, 350),
+            (750, 470),
+            (640, 480),
+            (610, 400),
+            (610, 250),
+            (680, 210),
+        ],
+        [
+            (360, 230),
+            (480, 220),
+            (580, 230),
+            (590, 410),
+            (460, 410),
+            (360, 400),
+            (350, 300),
+        ],
     ],
 }
 
@@ -73,19 +295,26 @@ NPC_COUNT_PER_ROOM = 3
 
 class AutonomousNPC:
     """A patrolling NPC that moves in a predetermined, invisible loop.
-    
+
     Guarantees non-extended doorward facing: never stays pointed at any doorway for
     longer than a brief fraction of a second (<0.30s) while actively traversing, and
     never points towards doorways while paused or idling.
     """
 
-    def __init__(self, start_pos: tuple[int, int] | list[tuple[int, int]], palette_index: int = 0,
-                 seed: int | None = None, door_targets: tuple[tuple[int, int], ...] = (),
-                 path: list[tuple[int, int]] | None = None):
+    def __init__(
+        self,
+        start_pos: tuple[int, int] | list[tuple[int, int]],
+        palette_index: int = 0,
+        seed: int | None = None,
+        door_targets: tuple[tuple[int, int], ...] = (),
+        path: list[tuple[int, int]] | None = None,
+    ):
         self.animations = get_npc_animations(palette_index)
         self.scaled_animations = {
             direction: {
-                state: [pygame.transform.smoothscale(frame, (60, 76)) for frame in frames]
+                state: [
+                    pygame.transform.smoothscale(frame, (60, 76)) for frame in frames
+                ]
                 for state, frames in states.items()
             }
             for direction, states in self.animations.items()
@@ -93,7 +322,11 @@ class AutonomousNPC:
 
         if path is not None:
             self.path = [tuple(p) for p in path]
-        elif isinstance(start_pos, (list, tuple)) and start_pos and isinstance(start_pos[0], (list, tuple)):
+        elif (
+            isinstance(start_pos, (list, tuple))
+            and start_pos
+            and isinstance(start_pos[0], (list, tuple))
+        ):
             self.path = [tuple(p) for p in start_pos]
         else:
             self.path = [tuple(start_pos)]
@@ -135,8 +368,11 @@ class AutonomousNPC:
         self.frame_index %= len(frames)
         self.image = frames[self.frame_index]
 
-    def is_pointing_at_door(self, direction: str | None = None, cone_angle: float = 38.0) -> bool:
-        """Returns True if the given (or current) facing direction points towards any doorway."""
+    def is_pointing_at_door(
+        self, direction: str | None = None, cone_angle: float = 38.0
+    ) -> bool:
+        """Returns True if the given (or current) facing direction points towards
+        any doorway."""
         if not self.door_targets:
             return False
         d = direction or self.direction
@@ -153,21 +389,27 @@ class AutonomousNPC:
             if dist > self.vision_range + 35:
                 # Top / Bottom door corridor
                 if abs(dx - 480) < 15 and abs(self.pos.x - dx) <= 55:
-                    if (dy < self.pos.y and d == "up") or (dy > self.pos.y and d == "down"):
+                    if (dy < self.pos.y and d == "up") or (
+                        dy > self.pos.y and d == "down"
+                    ):
                         return True
                 # Left / Right door corridor
                 if abs(dy - 348) < 15 and abs(self.pos.y - dy) <= 55:
-                    if (dx < self.pos.x and d == "left") or (dx > self.pos.x and d == "right"):
+                    if (dx < self.pos.x and d == "left") or (
+                        dx > self.pos.x and d == "right"
+                    ):
                         return True
         return False
 
     def _doorward_direction(self) -> str | None:
-        """Returns the single cardinal direction most directly pointing to the nearest doorway."""
+        """Returns the single cardinal direction most directly pointing to
+        the nearest doorway."""
         if not self.door_targets:
             return None
         target_x, target_y = min(
             self.door_targets,
-            key=lambda target: (target[0] - self.pos.x) ** 2 + (target[1] - self.pos.y) ** 2,
+            key=lambda target: (target[0] - self.pos.x) ** 2
+            + (target[1] - self.pos.y) ** 2,
         )
         dx, dy = target_x - self.pos.x, target_y - self.pos.y
         if abs(dx) > abs(dy):
@@ -177,7 +419,8 @@ class AutonomousNPC:
         return None
 
     def _is_facing_door(self, direction: str) -> bool:
-        """Check if facing in direction points directly towards any doorway landing spot."""
+        """Check if facing in direction points directly towards
+        any doorway landing spot."""
         if not self.door_targets:
             return False
         origin = (round(self.pos.x), round(self.pos.y - 48))
@@ -196,7 +439,11 @@ class AutonomousNPC:
 
     def _safe_directions(self) -> list[str]:
         """Cardinal directions that do not point toward any doorway."""
-        safe = [d for d in _DIRECTIONS if not self.is_pointing_at_door(d) and not self._is_facing_door(d)]
+        safe = [
+            d
+            for d in _DIRECTIONS
+            if not self.is_pointing_at_door(d) and not self._is_facing_door(d)
+        ]
         if not safe:
             safe = [d for d in _DIRECTIONS if not self.is_pointing_at_door(d)]
         if not safe:
@@ -223,7 +470,13 @@ class AutonomousNPC:
                 return p
         return safe[0] if safe else current_dir
 
-    def update(self, delta_time: float, bounds: pygame.Rect, solid_objects: list[pygame.Rect], other_npcs=()):
+    def update(
+        self,
+        delta_time: float,
+        bounds: pygame.Rect,
+        solid_objects: list[pygame.Rect],
+        other_npcs=(),
+    ):
         if len(self.path) > 1:
             target = self.path[(self.waypoint_index + 1) % len(self.path)]
             if self.phase == "wait":
@@ -247,7 +500,8 @@ class AutonomousNPC:
                     self.waypoint_index = (self.waypoint_index + 1) % len(self.path)
                     self.door_facing_timer = 0.0
                     self.gaze_override = None
-                    # Periodic brief pause to inspect room (only looking in safe directions)
+                    """ Periodic brief pause to inspect room
+                    (only looking in safe directions)"""
                     if self.rng.random() < 0.40:
                         self.phase = "wait"
                         self.phase_timer = self.rng.uniform(0.8, 1.4)
@@ -271,7 +525,9 @@ class AutonomousNPC:
                             self.door_facing_timer = 0.0
                     else:
                         self.door_facing_timer = 0.0
-                        if self.gaze_override and not self.is_pointing_at_door(move_dir):
+                        if self.gaze_override and not self.is_pointing_at_door(
+                            move_dir
+                        ):
                             self.gaze_override = None
                             current_facing = move_dir
                         elif not self.gaze_override:
@@ -321,8 +577,14 @@ class AutonomousNPC:
         angles = range(-self.vision_half_angle, self.vision_half_angle + 1, 5)
         arc = [
             (
-                round(origin[0] + math.cos(math.radians(facing_angle + offset)) * self.vision_range),
-                round(origin[1] + math.sin(math.radians(facing_angle + offset)) * self.vision_range),
+                round(
+                    origin[0]
+                    + math.cos(math.radians(facing_angle + offset)) * self.vision_range
+                ),
+                round(
+                    origin[1]
+                    + math.sin(math.radians(facing_angle + offset)) * self.vision_range
+                ),
             )
             for offset in angles
         ]
@@ -363,7 +625,9 @@ class AutonomousNPC:
             return True
 
         # 2. Player entity: evaluate ground contact point and core footprint
-        hitbox = getattr(target, "hitbox", target if isinstance(target, pygame.Rect) else None)
+        hitbox = getattr(
+            target, "hitbox", target if isinstance(target, pygame.Rect) else None
+        )
         if hitbox is None:
             return False
 
@@ -393,42 +657,54 @@ class AutonomousNPC:
         return True
 
 
-
 class RoomNPCController:
     """Owns independent NPCs for one room and updates their patrols."""
 
-    def __init__(self, room_id: str, bounds: pygame.Rect, solid_objects: list[pygame.Rect]):
+    def __init__(
+        self, room_id: str, bounds: pygame.Rect, solid_objects: list[pygame.Rect]
+    ):
         self.npcs = []
         self._seed = sum(map(ord, room_id))
 
-        door_walls = [door["wall"] for door in ROOMS_DATA.get(room_id, {}).get("doors", [])]
-        door_targets = tuple({
-            "left": (bounds.left, bounds.centery),
-            "right": (bounds.right, bounds.centery),
-            "top": (bounds.centerx, bounds.top),
-            "bottom": (bounds.centerx, bounds.bottom),
-        }[wall] for wall in door_walls)
+        door_walls = [
+            door["wall"] for door in ROOMS_DATA.get(room_id, {}).get("doors", [])
+        ]
+        door_targets = tuple(
+            {
+                "left": (bounds.left, bounds.centery),
+                "right": (bounds.right, bounds.centery),
+                "top": (bounds.centerx, bounds.top),
+                "bottom": (bounds.centerx, bounds.bottom),
+            }[wall]
+            for wall in door_walls
+        )
 
         room_paths = NPC_PATROL_PATHS.get(room_id)
         if room_paths:
             for idx in range(min(NPC_COUNT_PER_ROOM, len(room_paths))):
                 path = room_paths[idx]
-                self.npcs.append(AutonomousNPC(
-                    start_pos=path,
-                    palette_index=idx % 2,
-                    seed=self._seed + idx * 7919,
-                    door_targets=door_targets,
-                ))
+                self.npcs.append(
+                    AutonomousNPC(
+                        start_pos=path,
+                        palette_index=idx % 2,
+                        seed=self._seed + idx * 7919,
+                        door_targets=door_targets,
+                    )
+                )
         elif room_id in NPC_PATROLS:
             start_pos = NPC_PATROLS[room_id]
-            self.npcs.append(AutonomousNPC(
-                start_pos=start_pos,
-                palette_index=0,
-                seed=self._seed,
-                door_targets=door_targets,
-            ))
+            self.npcs.append(
+                AutonomousNPC(
+                    start_pos=start_pos,
+                    palette_index=0,
+                    seed=self._seed,
+                    door_targets=door_targets,
+                )
+            )
 
-    def update(self, delta_time: float, bounds: pygame.Rect, solid_objects: list[pygame.Rect]):
+    def update(
+        self, delta_time: float, bounds: pygame.Rect, solid_objects: list[pygame.Rect]
+    ):
         for index, npc in enumerate(self.npcs):
             other_hitboxes = [other.hitbox for other in self.npcs if other is not npc]
             npc.update(delta_time, bounds, solid_objects, other_hitboxes)
@@ -439,7 +715,12 @@ class RoomNPCController:
             for npc in self.npcs
         ]
 
-    def draw_vision(self, surface: pygame.Surface, bounds: pygame.Rect, alerted_npcs: set[AutonomousNPC] | None = None):
+    def draw_vision(
+        self,
+        surface: pygame.Surface,
+        bounds: pygame.Rect,
+        alerted_npcs: set[AutonomousNPC] | None = None,
+    ):
         if not self.npcs:
             return
         vision_layer = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
@@ -457,7 +738,9 @@ class RoomNPCController:
     ) -> bool:
         """Returns True if the target collides with any NPC's viewpoint points."""
         for npc in self.npcs:
-            if npc.collides_with_vision(target, bounds=bounds, solid_objects=solid_objects):
+            if npc.collides_with_vision(
+                target, bounds=bounds, solid_objects=solid_objects
+            ):
                 return True
         return False
 
@@ -497,7 +780,9 @@ def segments_intersect(
     return (0.0 <= u <= 1.0) and (0.0 <= v <= 1.0)
 
 
-def polygon_collides_with_rect(poly: list[tuple[float, float]], rect: pygame.Rect) -> bool:
+def polygon_collides_with_rect(
+    poly: list[tuple[float, float]], rect: pygame.Rect
+) -> bool:
     """Checks collision between an arbitrary 2D polygon and a pygame.Rect."""
     min_x = min(p[0] for p in poly)
     max_x = max(p[0] for p in poly)
