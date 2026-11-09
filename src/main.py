@@ -98,7 +98,7 @@ def main():
     game_over_modal = None
     room_entry_grace = 0.8
     detection_timer = 0.0
-    DETECTION_THRESHOLD = 0.25
+    DETECTION_THRESHOLD = 0.09
     game_state = STATE_MENU
 
     running = True
