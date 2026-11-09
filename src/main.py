@@ -229,33 +229,7 @@ def main():
             # State: GAME OVER
             # ---------------------------------------------------------
             elif game_state == STATE_GAME_OVER:
-                if game_over_modal:
-                    action = game_over_modal.handle_event(event)
-                    if action == "RETRY":
-                        evidence_mgr = EvidenceManager()
-                        interaction_mgr.set_evidence_manager(evidence_mgr)
-                        journal_view = JournalView(evidence_mgr)
-                        menu.evidence_mgr = evidence_mgr
-                        current_room_id = "crime_scene"
-                        visited_rooms = {current_room_id}
-                        room = Room(
-                            interaction_mgr,
-                            current_room_id,
-                            ROOMS_DATA[current_room_id],
-                            treasure_mgr,
-                            evidence_mgr=evidence_mgr,
-                        )
-                        player = Player(start_x=SCREEN_WIDTH // 2, start_y=420)
-                        has_active_game = True
-                        room_entry_grace = 0.8
-                        detection_timer = 0.0
-                        game_over_modal = None
-                        game_state = STATE_PLAYING
-                        save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
-                    elif action == "MENU":
-                        has_active_game = False
-                        game_over_modal = None
-                        game_state = STATE_MENU
+                pass
 
             # ---------------------------------------------------------
             # State: PLAYING
@@ -308,7 +282,9 @@ def main():
 
         elif game_state == STATE_GAME_OVER:
             if game_over_modal:
-                game_over_modal.update(delta_time)
+                if game_over_modal.update(delta_time):
+                    game_over_modal = None
+                    game_state = STATE_MENU
 
         elif game_state == STATE_PLAYING:
             if interaction_mgr.is_inspecting:
