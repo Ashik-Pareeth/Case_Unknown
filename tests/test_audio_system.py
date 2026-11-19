@@ -15,6 +15,7 @@ from src.audio_manager import (
     play_sound,
     play_menu_music,
     stop_menu_music,
+    play_footstep,
 )
 
 
@@ -137,6 +138,31 @@ class TestAudioSystem(unittest.TestCase):
         stop_menu_music()
         if mgr.enabled:
             self.assertFalse(mgr.is_music_playing)
+
+    def test_wood_bootstep_pool(self):
+        """Verify wood bootstep audio pool loading, procedural synthesis, and playback."""
+        mgr = get_audio_manager()
+
+        if mgr.enabled:
+            # Pool should contain 6 bootstep variations
+            self.assertGreaterEqual(len(mgr.footstep_sounds), 6)
+            for idx, sound in enumerate(mgr.footstep_sounds):
+                self.assertIsNotNone(sound, f"Bootstep variation {idx} is None")
+                self.assertGreater(
+                    sound.get_length(), 0.0, f"Bootstep variation {idx} duration is zero"
+                )
+
+        # Procedural synthesis verification for all 6 variations
+        if pygame.mixer.get_init():
+            for i in range(6):
+                synth_sound = Synthesizer.synth_wood_bootstep(i)
+                self.assertIsNotNone(synth_sound)
+                self.assertGreater(synth_sound.get_length(), 0.0)
+
+        # Immediate footstep triggering without time arguments (player movement)
+        result = play_footstep()
+        if mgr.enabled and not mgr.is_muted():
+            self.assertTrue(result)
 
 
 if __name__ == "__main__":

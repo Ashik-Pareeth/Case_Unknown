@@ -10,21 +10,23 @@ from __future__ import annotations
 import io
 import math
 import os
+import random
 import struct
 import wave
 import pygame
 
 
-# Directory for optional external sound files
+# Directories for audio and sound assets
 SOUND_ASSETS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "sounds"
+)
+AUDIO_ASSETS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "audio"
 )
 
 # Background menu music track path
 MENU_MUSIC_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "assets",
-    "audio",
+    AUDIO_ASSETS_DIR,
     "Rain_Against_the_Glass.mp3",
 )
 
@@ -229,15 +231,48 @@ class Synthesizer:
         )
 
     @classmethod
+    def synth_wood_bootstep(cls, variation: int = 0) -> pygame.mixer.Sound | None:
+        """Organic wood bootstep with heel strike, plank cavity body, and leather friction."""
+        durations = [0.110, 0.095, 0.125, 0.090, 0.130, 0.105]
+        fund_freqs = [142.0, 168.0, 150.0, 182.0, 132.0, 158.0]
+        wood_modes = [310.0, 360.0, 290.0, 410.0, 275.0, 340.0]
+        heel_clicks = [1750.0, 1520.0, 1920.0, 2200.0, 1400.0, 1650.0]
+        decay_rates = [32.0, 38.0, 28.0, 42.0, 25.0, 35.0]
+
+        idx = variation % len(durations)
+        dur = durations[idx]
+        f0 = fund_freqs[idx]
+        f_wood = wood_modes[idx]
+        f_click = heel_clicks[idx]
+        decay = decay_rates[idx]
+
+        def _gen(t: float, d: float, i: int) -> float:
+            click = math.sin(2.0 * math.pi * f_click * t) * math.exp(-t * 220.0) * 0.45
+            pitch_drop = f0 * (1.0 + 0.35 * math.exp(-t * 60.0))
+            thud = math.sin(2.0 * math.pi * pitch_drop * t) * math.exp(-t * decay) * 0.65
+            wood = (
+                math.sin(2.0 * math.pi * f_wood * t + 0.3)
+                * math.exp(-t * (decay * 1.35))
+                * 0.38
+            )
+            sub = math.sin(2.0 * math.pi * 75.0 * t) * math.exp(-t * (decay * 1.6)) * 0.30
+            scuff = (
+                (((i % 11) - 5) / 5.0) * 0.22 * math.exp(-t * 45.0)
+                if t < 0.04
+                else 0.0
+            )
+
+            combined = click + thud + wood + sub + scuff
+            attack = min(1.0, t / 0.0025)
+            release = max(0.0, 1.0 - (t / d) ** 2.0)
+            return math.tanh(combined * attack * release * 1.25)
+
+        return cls._create_wav_sound(dur, _gen)
+
+    @classmethod
     def synth_footstep(cls) -> pygame.mixer.Sound | None:
-        """Subtle leather shoe tap on parquet floor (0.035s)."""
-        return cls._create_wav_sound(
-            0.035,
-            lambda t, d, i: (
-                math.sin(2.0 * math.pi * (120.0 - 40.0 * (t / d)) * t) * 0.55
-                + ((i % 9) - 4) / 4.0 * 0.18
-            ) * max(0.0, 1.0 - t / d),
-        )
+        """Default procedural leather bootstep on hardwood floor."""
+        return cls.synth_wood_bootstep(0)
 
 
 class AudioManager:
@@ -256,6 +291,7 @@ class AudioManager:
         self.muted = False
         self.is_music_playing = False
         self.sounds: dict[str, pygame.mixer.Sound] = {}
+        self.footstep_sounds: list[pygame.mixer.Sound] = []
         self.last_footstep_time = 0.0
 
         self._init_mixer()
@@ -316,6 +352,32 @@ class AudioManager:
             if sound is not None:
                 self.sounds[name] = sound
 
+        # Load wood bootstep variation pool (assets/audio/ or procedural fallback)
+        self.footstep_sounds.clear()
+        for i in range(1, 7):
+            step_sound = None
+            for folder in (AUDIO_ASSETS_DIR, SOUND_ASSETS_DIR):
+                if os.path.isdir(folder):
+                    for ext in (".wav", ".ogg"):
+                        path = os.path.join(folder, f"bootstep_{i}{ext}")
+                        if os.path.isfile(path):
+                            try:
+                                step_sound = pygame.mixer.Sound(path)
+                                break
+                            except Exception:
+                                step_sound = None
+                    if step_sound is not None:
+                        break
+
+            if step_sound is None:
+                step_sound = Synthesizer.synth_wood_bootstep(i - 1)
+
+            if step_sound is not None:
+                self.footstep_sounds.append(step_sound)
+
+        if self.footstep_sounds and "footstep" not in self.sounds:
+            self.sounds["footstep"] = self.footstep_sounds[0]
+
     def play(self, sound_name: str, volume_mult: float = 1.0) -> None:
         """Play a designated sound effect if mixer is active and unmuted."""
         if not self.enabled or self.muted:
@@ -356,13 +418,43 @@ class AudioManager:
             pass
         self.is_music_playing = False
 
-    def play_footstep(self, current_time: float, interval: float = 0.32) -> bool:
-        """Play paced footstep sounds during active movement."""
-        if current_time - self.last_footstep_time >= interval:
+    def play_footstep(
+        self,
+        current_time: float | None = None,
+        interval: float = 0.32,
+        volume_mult: float = 1.0,
+    ) -> bool:
+        """Play a wood bootstep sound from the variation pool on an available channel."""
+        if not self.enabled or self.muted:
+            return False
+
+        if current_time is not None:
+            if current_time - self.last_footstep_time < interval:
+                return False
             self.last_footstep_time = current_time
-            self.play("footstep", volume_mult=0.45)
-            return True
-        return False
+
+        pool = (
+            self.footstep_sounds
+            if self.footstep_sounds
+            else ([self.sounds["footstep"]] if "footstep" in self.sounds else [])
+        )
+        if not pool:
+            return False
+
+        sound = random.choice(pool)
+        vol_variation = random.uniform(0.70, 0.90)
+        effective_vol = max(
+            0.0,
+            min(1.0, self.master_volume * self.sfx_volume * vol_variation * volume_mult),
+        )
+        sound.set_volume(effective_vol)
+
+        channel = pygame.mixer.find_channel()
+        if channel:
+            channel.play(sound)
+        else:
+            sound.play()
+        return True
 
     def set_master_volume(self, volume: float) -> None:
         """Adjust master volume level between 0.0 and 1.0."""
@@ -426,4 +518,15 @@ def play_menu_music() -> None:
 def stop_menu_music() -> None:
     """Convenience helper to stop the menu music track."""
     get_audio_manager().stop_menu_music()
+
+
+def play_footstep(
+    current_time: float | None = None,
+    interval: float = 0.32,
+    volume_mult: float = 1.0,
+) -> bool:
+    """Convenience helper to play a wood bootstep sound via the global audio manager."""
+    return get_audio_manager().play_footstep(
+        current_time=current_time, interval=interval, volume_mult=volume_mult
+    )
 

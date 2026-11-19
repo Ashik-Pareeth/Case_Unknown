@@ -3,7 +3,7 @@ Player character entity with 4-directional SVG sprite animation and collision ph
 """
 
 import pygame
-from src.audio_manager import play_sound
+from src.audio_manager import play_sound, play_footstep
 from src.settings import (
     PLAYER_SPEED,
     PLAYER_HITBOX_WIDTH,
@@ -38,8 +38,9 @@ class Player:
         self.sprite_w = self.image.get_width()
         self.sprite_h = self.image.get_height()
 
-        # Cached hitboxes
-        self.footstep_timer = 0.2
+        # Cached hitboxes & step audio timer
+        self.step_timer = 0.30
+        self.footstep_timer = self.step_timer
         self.hitbox = pygame.Rect(0, 0, self.hitbox_w, self.hitbox_h)
         self.update_rects()
 
@@ -106,12 +107,13 @@ class Player:
 
         # Footstep audio cadence during movement
         if self.state == "walk" and self.velocity.length_squared() > 0:
-            self.footstep_timer += delta_time
-            if self.footstep_timer >= 0.32:
-                self.footstep_timer = 0.0
-                play_sound("footstep", volume_mult=0.45)
+            self.step_timer += delta_time
+            if self.step_timer >= 0.36:
+                self.step_timer = 0.0
+                play_footstep(volume_mult=0.85)
         else:
-            self.footstep_timer = 0.24
+            self.step_timer = 0.30
+        self.footstep_timer = self.step_timer
 
         # 2. X-Axis Movement & Collision
         if self.velocity.x != 0:
