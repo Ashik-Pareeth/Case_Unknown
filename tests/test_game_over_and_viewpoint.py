@@ -128,56 +128,21 @@ class TestGameOverAndViewpoint(unittest.TestCase):
 
     def test_game_over_window_ui_and_events(self):
         game_over = GameOverWindow(reason="Test Interception")
-        game_over.update(0.2)
+        self.assertEqual(game_over.reason, "Test Interception")
+        self.assertFalse(game_over.finished)
 
-        # Render onto screen
+        # Before input delay, events are ignored
+        game_over.update(0.1)
         game_over.draw(self.screen)
+        key_event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_SPACE})
+        self.assertFalse(game_over.handle_event(key_event))
+        self.assertFalse(game_over.finished)
 
-        # Default selected is RETRY
-        self.assertEqual(game_over.selected_idx, 0)
-
-        # Keyboard down to switch to MENU
-        key_down_event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_DOWN})
-        action = game_over.handle_event(key_down_event)
-        self.assertIsNone(action)
-        self.assertEqual(game_over.selected_idx, 1)
-
-        # Press ENTER on MENU
-        enter_event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_RETURN})
-        action = game_over.handle_event(enter_event)
-        self.assertEqual(action, "MENU")
-
-        # Press ESC to exit to MENU
-        esc_event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_ESCAPE})
-        action = game_over.handle_event(esc_event)
-        self.assertEqual(action, "MENU")
-
-        # Press R for RETRY shortcut
-        r_event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_r})
-        action = game_over.handle_event(r_event)
-        self.assertEqual(action, "RETRY")
-
-        # Mouse click on RETRY button
-        click_retry = pygame.event.Event(
-            pygame.MOUSEBUTTONDOWN,
-            {"button": 1, "pos": (game_over.btn_retry_rect.centerx, game_over.btn_retry_rect.centery)},
-        )
-        action = game_over.handle_event(click_retry)
-        self.assertEqual(action, "RETRY")
-
-        # Mouse click on MENU button
-        click_menu = pygame.event.Event(
-            pygame.MOUSEBUTTONDOWN,
-            {"button": 1, "pos": (game_over.btn_menu_rect.centerx, game_over.btn_menu_rect.centery)},
-        )
-        action = game_over.handle_event(click_menu)
-        self.assertEqual(action, "MENU")
-
-        # Left / Right keys toggle selection
-        key_left = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_LEFT})
-        game_over.selected_idx = 0
-        game_over.handle_event(key_left)
-        self.assertEqual(game_over.selected_idx, 1)
+        # After input delay (0.35s), key press dismisses the modal
+        game_over.update(0.3)
+        self.assertTrue(game_over.handle_event(key_event))
+        self.assertTrue(game_over.finished)
+        self.assertTrue(game_over.update(0.0))
 
     def test_full_detection_and_save_clearing_integration(self):
         """Simulates full detection cycle: save game -> player collides with NPC cone -> game over -> save cleared."""

@@ -7,6 +7,7 @@ the player's current location, doorway corridors, and recovered/locked treasure 
 
 import math
 import pygame
+from src.audio_manager import play_sound
 from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -87,9 +88,11 @@ class PrecinctMapView:
     def handle_event(self, event: pygame.event.Event) -> bool:
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_m, pygame.K_ESCAPE, pygame.K_TAB):
+                play_sound("inspect_close")
                 return True
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Clicking close button or outside
+            play_sound("inspect_close")
             return True
         return False
 

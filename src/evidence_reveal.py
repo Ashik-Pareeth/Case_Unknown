@@ -7,6 +7,7 @@ from src.settings import (
     SCREEN_HEIGHT,
     UI_ACCENT_GOLD,
 )
+from src.audio_manager import play_sound
 from src.treasure import TreasureItem
 from src.experience import ExperienceManager
 
@@ -36,6 +37,7 @@ class EvidenceRevealModal:
 
         # Dismiss Button Rect
         self.btn_dismiss_rect = pygame.Rect(self.target_x + self.target_w // 2 - 130, self.target_y + self.target_h - 52, 260, 36)
+        play_sound("evidence_reveal")
 
     def update(self, delta_time: float):
         self.anim_time += delta_time
@@ -47,9 +49,11 @@ class EvidenceRevealModal:
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_SPACE, pygame.K_RETURN, pygame.K_e, pygame.K_ESCAPE):
                 self.is_closed = True
+                play_sound("inspect_close")
                 return True
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.is_closed = True
+            play_sound("inspect_close")
             return True
         return False
 

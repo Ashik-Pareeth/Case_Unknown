@@ -11,6 +11,7 @@ Provides:
 import math
 from pathlib import Path
 import pygame
+from src.audio_manager import play_sound
 from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -95,11 +96,13 @@ class MenuSystem:
         # Main Menu Navigation
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_UP, pygame.K_w):
+                play_sound("ui_select")
                 self.selected_idx = (self.selected_idx - 1) % len(self.menu_options)
                 # Skip disabled resume if no active game
                 if not has_active_game and self.menu_options[self.selected_idx]["id"] == "RESUME":
                     self.selected_idx = (self.selected_idx - 1) % len(self.menu_options)
             elif event.key in (pygame.K_DOWN, pygame.K_s):
+                play_sound("ui_select")
                 self.selected_idx = (self.selected_idx + 1) % len(self.menu_options)
                 if not has_active_game and self.menu_options[self.selected_idx]["id"] == "RESUME":
                     self.selected_idx = (self.selected_idx + 1) % len(self.menu_options)
@@ -125,6 +128,7 @@ class MenuSystem:
         return None
 
     def _trigger_option(self, option_id: str, has_active_game: bool) -> str | None:
+        play_sound("ui_select")
         if option_id == "RESUME":
             if has_active_game:
                 return "RESUME"

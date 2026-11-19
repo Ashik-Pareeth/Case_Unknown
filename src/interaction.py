@@ -14,6 +14,7 @@ from __future__ import annotations
 import math
 import os
 import pygame
+from src.audio_manager import play_sound
 from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -179,6 +180,7 @@ class InteractionManager:
             if event.key in (pygame.K_e, pygame.K_SPACE):
                 if self.is_inspecting:
                     self.is_inspecting = False
+                    play_sound("inspect_close")
                     return True
                 elif self.active_object is not None:
                     if self.active_object.key_id and self.evidence_manager:
@@ -197,6 +199,7 @@ class InteractionManager:
                     # Open Inspection Panel
                     self.is_inspecting = True
                     self.dialogue_scroll = 0
+                    play_sound("inspect_open")
 
                     # Automatically record in journal if it's an evidence object (§5.2, §5.3)
                     if self.active_object.obj_type == TYPE_EVIDENCE and self.evidence_manager:
@@ -207,6 +210,7 @@ class InteractionManager:
 
             elif event.key == pygame.K_ESCAPE and self.is_inspecting:
                 self.is_inspecting = False
+                play_sound("inspect_close")
                 return True
 
         return False

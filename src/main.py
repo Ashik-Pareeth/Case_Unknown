@@ -19,6 +19,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pygame
+from src.audio_manager import play_sound, play_menu_music, stop_menu_music
 from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -78,7 +79,9 @@ def main():
     if saved_state:
         current_room_id = saved_state["current_room_id"]
         visited_rooms = saved_state["visited_rooms"]
-        player = Player(start_x=saved_state["player_pos"][0], start_y=saved_state["player_pos"][1])
+        player = Player(
+            start_x=saved_state["player_pos"][0], start_y=saved_state["player_pos"][1]
+        )
         has_active_game = True
     else:
         current_room_id = "crime_scene"
@@ -87,7 +90,13 @@ def main():
         has_active_game = False
 
     room_data = ROOMS_DATA.get(current_room_id, ROOMS_DATA["crime_scene"])
-    room = Room(interaction_mgr, current_room_id, room_data, treasure_mgr, evidence_mgr=evidence_mgr)
+    room = Room(
+        interaction_mgr,
+        current_room_id,
+        room_data,
+        treasure_mgr,
+        evidence_mgr=evidence_mgr,
+    )
 
     active_puzzle = None
     active_treasure_id = None
@@ -100,12 +109,21 @@ def main():
     detection_timer = 0.0
     DETECTION_THRESHOLD = 0.09
     game_state = STATE_MENU
+    prev_game_state = None
 
     running = True
 
     while running:
         delta_time = clock.tick(FPS) / 1000.0
         delta_time = min(delta_time, 0.05)
+
+        # Update background music on menu state entry/exit
+        if game_state != prev_game_state:
+            if game_state == STATE_MENU:
+                play_menu_music()
+            elif prev_game_state == STATE_MENU:
+                stop_menu_music()
+            prev_game_state = game_state
 
         # =============================================================
         # 1. EVENT PROCESSING
@@ -146,7 +164,12 @@ def main():
                     room_entry_grace = 0.8
                     detection_timer = 0.0
                     game_state = STATE_PLAYING
-                    save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
+                    save_mgr.save_game(
+                        current_room_id,
+                        (player.pos.x, player.pos.y),
+                        visited_rooms,
+                        evidence_mgr,
+                    )
                 elif action == "MAP":
                     game_state = STATE_MAP
                 elif action == "JOURNAL":
@@ -192,13 +215,17 @@ def main():
                         active_treasure_id = None
                         game_state = STATE_PLAYING
                     elif active_puzzle.is_solved and active_door_gate_id:
+                        play_sound("door_unlocked")
                         evidence_mgr.unlocked_gates.add(active_door_gate_id)
-                        evidence_mgr._queue_toast("PASSAGE UNLOCKED", "The keypad clicks open.")
+                        evidence_mgr._queue_toast(
+                            "PASSAGE UNLOCKED", "The keypad clicks open."
+                        )
                         active_door_gate_id = None
                         active_door_wall = None
                         active_puzzle = None
                         game_state = STATE_PLAYING
                     elif active_puzzle.is_solved and active_treasure_id:
+                        play_sound("puzzle_solved")
                         treasure_mgr.unlock_treasure(active_treasure_id)
                         item = treasure_mgr.get_treasure(active_treasure_id)
                         room = Room(
@@ -229,7 +256,8 @@ def main():
             # State: GAME OVER
             # ---------------------------------------------------------
             elif game_state == STATE_GAME_OVER:
-                pass
+                if game_over_modal:
+                    game_over_modal.handle_event(event)
 
             # ---------------------------------------------------------
             # State: PLAYING
@@ -241,9 +269,11 @@ def main():
                         game_state = STATE_MENU
                         continue
                     elif event.key == pygame.K_j:
+                        play_sound("journal_flip")
                         game_state = STATE_JOURNAL
                         continue
                     elif event.key in (pygame.K_m, pygame.K_TAB):
+                        play_sound("journal_flip")
                         game_state = STATE_MAP
                         continue
 
@@ -302,13 +332,19 @@ def main():
             # Check viewpoint collision with patrolling NPCs (requires physical entry into viewpoint)
             spotted = (room_entry_grace <= 0) and room.check_player_spotted(player)
             if spotted:
+                if detection_timer == 0.0:
+                    play_sound("guard_alert")
                 detection_timer += delta_time
                 if detection_timer >= DETECTION_THRESHOLD:
                     save_mgr.clear_save()
                     has_active_game = False
                     interaction_mgr.active_evidence = None
                     interaction_mgr.is_inspecting = False
-                    game_over_modal = GameOverWindow()
+                    play_sound("game_over")
+                    game_over_modal = GameOverWindow(
+                        reason="A patrol officer spotted you inside the restricted corridor.",
+                        image_path="assets/assets/game_over.png",
+                    )
                     game_state = STATE_GAME_OVER
                     detection_timer = 0.0
                     continue
@@ -336,6 +372,7 @@ def main():
                     door_hints_shown.add(active_door_gate_id)
                 game_state = STATE_PUZZLE
             elif door and door.get("blocked"):
+                play_sound("door_locked")
                 msg = door["door"].get("gate_msg", "This passage is locked.")
                 evidence_mgr.show_or_extend_toast("PASSAGE RESTRICTED", msg)
                 wall = door["door"]["wall"]
@@ -349,13 +386,25 @@ def main():
                     player.pos.y -= 16
                 player.update_rects()
             elif door:
+                play_sound("door_open")
                 current_room_id = door["target_room"]
                 visited_rooms.add(current_room_id)
                 player.pos = pygame.Vector2(*door["target_pos"])
                 player.update_rects()
                 target_data = ROOMS_DATA.get(current_room_id, ROOMS_DATA["crime_scene"])
-                room = Room(interaction_mgr, current_room_id, target_data, treasure_mgr, evidence_mgr=evidence_mgr)
-                save_mgr.save_game(current_room_id, (player.pos.x, player.pos.y), visited_rooms, evidence_mgr)
+                room = Room(
+                    interaction_mgr,
+                    current_room_id,
+                    target_data,
+                    treasure_mgr,
+                    evidence_mgr=evidence_mgr,
+                )
+                save_mgr.save_game(
+                    current_room_id,
+                    (player.pos.x, player.pos.y),
+                    visited_rooms,
+                    evidence_mgr,
+                )
                 room_entry_grace = 0.8
                 detection_timer = 0.0
 
@@ -365,7 +414,14 @@ def main():
         if game_state == STATE_MENU:
             menu.draw(screen, has_active_game)
 
-        elif game_state in (STATE_PLAYING, STATE_PUZZLE, STATE_MAP, STATE_REVEAL, STATE_JOURNAL, STATE_GAME_OVER):
+        elif game_state in (
+            STATE_PLAYING,
+            STATE_PUZZLE,
+            STATE_MAP,
+            STATE_REVEAL,
+            STATE_JOURNAL,
+            STATE_GAME_OVER,
+        ):
             screen.fill(COLOR_BG)
 
             # 3.1 Room Environment & Decor
@@ -373,22 +429,32 @@ def main():
             alerted_npcs = set()
             if game_state == STATE_PLAYING and room_entry_grace <= 0:
                 for npc in room.npc_controller.npcs:
-                    if npc.collides_with_vision(player, bounds=room.floor_rect, solid_objects=room.solid_objects):
+                    if npc.collides_with_vision(
+                        player, bounds=room.floor_rect, solid_objects=room.solid_objects
+                    ):
                         alerted_npcs.add(npc)
-            room.npc_controller.draw_vision(screen, room.floor_rect, alerted_npcs=alerted_npcs)
+            room.npc_controller.draw_vision(
+                screen, room.floor_rect, alerted_npcs=alerted_npcs
+            )
 
             # 3.2 Depth-Sorted Entities
             draw_queue = []
             for item in room.furniture_items:
-                draw_queue.append({
-                    "sort_y": item["sort_y"],
-                    "draw": lambda surf=item["surface"], rect=item["rect"]: screen.blit(surf, rect),
-                })
+                draw_queue.append(
+                    {
+                        "sort_y": item["sort_y"],
+                        "draw": lambda surf=item["surface"], rect=item[
+                            "rect"
+                        ]: screen.blit(surf, rect),
+                    }
+                )
             draw_queue.extend(room.npc_controller.draw_queue(screen))
-            draw_queue.append({
-                "sort_y": player.hitbox.bottom,
-                "draw": lambda: player.draw(screen),
-            })
+            draw_queue.append(
+                {
+                    "sort_y": player.hitbox.bottom,
+                    "draw": lambda: player.draw(screen),
+                }
+            )
             draw_queue.sort(key=lambda x: x["sort_y"])
 
             for element in draw_queue:
@@ -423,6 +489,7 @@ def main():
 
         pygame.display.flip()
 
+    stop_menu_music()
     pygame.quit()
     sys.exit()
 

@@ -55,6 +55,16 @@ Players take on the role of an investigator exploring an interconnected, restric
 - **Local State Persistence**:
   - Robust JSON-based save manager (`save_game.json`) automatically persisting player position, current sector, visited rooms, collected evidence, and unlocked gates.
 
+- **Dynamic Audio & Sound Effects Engine**:
+  - Centralized audio manager (`src/audio_manager.py`) with zero-external-binary procedural waveform synthesis in pure Python.
+  - Sixteen responsive audio event cues:
+    - **Investigation**: Document rustle (`inspect_open`), folder close (`inspect_close`), and dramatic minor chord sting (`evidence_reveal`).
+    - **Stealth**: Rhythmic walking footsteps, dissonant alert sting (`guard_alert`), and heavy impact chord (`game_over`).
+    - **Puzzles**: Dial ticks (`puzzle_click`), electronic keypad tones (`puzzle_digit`), vault tumbler unlock chime (`puzzle_solved`), and low rejection buzzer (`puzzle_failed`).
+    - **Traversal**: Timber door unlatch (`door_open`), iron handle rattle (`door_locked`), and relay unlock click (`door_unlocked`).
+    - **Interface**: Blueprint and dossier flips (`journal_flip`), typewriter bell chime (`ui_toast`), and mechanical menu switch clicks (`ui_select`).
+  - Automatic fallback for headless environments and support for drop-in WAV/OGG file overrides in `assets/sounds/`.
+
 ---
 
 ## Project Structure
@@ -73,6 +83,7 @@ Case_Unknown/
 ├── src/
 │   ├── __init__.py
 │   ├── settings.py                # Display dimensions, framerate, theme palettes, physics
+│   ├── audio_manager.py           # Sound engine, procedural waveform synthesis, volume control
 │   ├── main.py                    # Main game loop, state machine, and event dispatcher
 │   ├── player.py                  # Detective controller, animation states, collision
 │   ├── npc.py                     # Autonomous NPC patrols, vision cones, loop routes
@@ -96,6 +107,7 @@ Case_Unknown/
 │       └── puzzle.py              # Interactive puzzle UI components
 ├── tests/
 │   ├── test_game.py               # Core mechanics, vector compilation, collision tests
+│   ├── test_audio_system.py       # Waveform synthesis, audio manager, volume, and playback tests
 │   ├── test_game_over_and_viewpoint.py # Vision raycasting, obstruction, game over tests
 │   ├── test_predetermined_loop_patrol.py # Multi-point looping routes and door safety tests
 │   ├── test_directives_progression.py   # Narrative directives and progression tests
@@ -187,3 +199,4 @@ python -m unittest discover tests
 - **`test_game_over_and_viewpoint.py`**: Tests vision polygon calculation, player ground-contact detection, solid wall and furniture line-of-sight obstruction, and permadeath save clearing.
 - **`test_predetermined_loop_patrol.py`**: Validates all 24 predetermined looping patrol circuits across all precinct rooms, confirming collision-free paths and verifying that guard vision cones never linger on doors for extended periods.
 - **`test_directives_progression.py`**: Verifies evidence state transitions, gate unlocking, clue connections, and narrative progression.
+- **`test_audio_system.py`**: Verifies waveform synthesis across all 16 sound profiles, volume scaling, mute toggling, cadence throttling, and headless fallback.

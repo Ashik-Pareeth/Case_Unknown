@@ -11,6 +11,7 @@ Strictly adheres to directives.txt:
 from __future__ import annotations
 from dataclasses import dataclass, field
 import pygame
+from src.audio_manager import play_sound
 from src.settings import (
     SCREEN_WIDTH,
     UI_PANEL_BG,
@@ -315,6 +316,7 @@ class EvidenceManager:
         return self.questions
 
     def _queue_toast(self, title: str, subtitle: str, duration: float = 3.6):
+        play_sound("ui_toast")
         toast = JournalToast(title=title, subtitle=subtitle, timer=duration, max_duration=duration)
         if self.active_toast is None:
             self.active_toast = toast

@@ -12,6 +12,7 @@ Strictly adheres to directives.txt §6:
 
 from __future__ import annotations
 import pygame
+from src.audio_manager import play_sound
 from src.settings import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -63,20 +64,26 @@ class JournalView:
             return False
 
         if event.key in (pygame.K_j, pygame.K_ESCAPE):
+            play_sound("inspect_close")
             return True  # Signal to close journal
 
         # Tab switching: 1, 2, 3 or TAB
         if event.key == pygame.K_1:
             self.current_tab = TAB_EVIDENCE
+            play_sound("journal_flip")
         elif event.key == pygame.K_2:
             self.current_tab = TAB_CONNECTIONS
+            play_sound("journal_flip")
         elif event.key == pygame.K_3:
             self.current_tab = TAB_QUESTIONS
+            play_sound("journal_flip")
         elif event.key == pygame.K_TAB:
             self.current_tab = (self.current_tab + 1) % 3
+            play_sound("journal_flip")
 
         # Arrow key navigation
         elif event.key in (pygame.K_UP, pygame.K_w):
+            play_sound("ui_select")
             if self.current_tab == TAB_EVIDENCE:
                 items = self.evidence_manager.get_recorded_items()
                 if items:
@@ -91,6 +98,7 @@ class JournalView:
                     self.selected_q_index = (self.selected_q_index - 1) % len(qs)
 
         elif event.key in (pygame.K_DOWN, pygame.K_s):
+            play_sound("ui_select")
             if self.current_tab == TAB_EVIDENCE:
                 items = self.evidence_manager.get_recorded_items()
                 if items:

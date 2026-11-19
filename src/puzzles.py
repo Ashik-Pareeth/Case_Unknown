@@ -21,6 +21,7 @@ from src.settings import (
     UI_ACCENT_GOLD,
     UI_SUCCESS_GREEN,
 )
+from src.audio_manager import play_sound
 from src.ui.puzzle import draw_puzzle_frame
 
 
@@ -110,39 +111,48 @@ class NumberLockPuzzle(BasePuzzle):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.is_closed = True
+                play_sound("inspect_close")
                 return True
             elif event.key == pygame.K_h:
                 self.show_hint = not self.show_hint
+                play_sound("ui_select")
                 return True
             elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                 self.check_solution()
                 return True
             elif event.key in (pygame.K_LEFT, pygame.K_a):
                 self.selected_idx = (self.selected_idx - 1) % self.num_digits
+                play_sound("ui_select")
                 return True
             elif event.key in (pygame.K_RIGHT, pygame.K_d):
                 self.selected_idx = (self.selected_idx + 1) % self.num_digits
+                play_sound("ui_select")
                 return True
             elif event.key in (pygame.K_UP, pygame.K_w):
                 self.current_code[self.selected_idx] = (self.current_code[self.selected_idx] + 1) % 10
+                play_sound("puzzle_click")
                 return True
             elif event.key in (pygame.K_DOWN, pygame.K_s):
                 self.current_code[self.selected_idx] = (self.current_code[self.selected_idx] - 1) % 10
+                play_sound("puzzle_click")
                 return True
             elif pygame.K_0 <= event.key <= pygame.K_9:
                 # Direct digit input
                 digit = event.key - pygame.K_0
                 self.current_code[self.selected_idx] = digit
                 self.selected_idx = (self.selected_idx + 1) % self.num_digits
+                play_sound("puzzle_digit")
                 return True
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mpos = event.pos
             if self.btn_close_rect.collidepoint(mpos):
                 self.is_closed = True
+                play_sound("inspect_close")
                 return True
             if self.btn_hint_rect.collidepoint(mpos):
                 self.show_hint = not self.show_hint
+                play_sound("ui_select")
                 return True
             if self.btn_check_rect.collidepoint(mpos):
                 self.check_solution()
@@ -153,14 +163,17 @@ class NumberLockPuzzle(BasePuzzle):
                 if self.btn_up_rects[i].collidepoint(mpos):
                     self.selected_idx = i
                     self.current_code[i] = (self.current_code[i] + 1) % 10
+                    play_sound("puzzle_click")
                     return True
                 if self.btn_down_rects[i].collidepoint(mpos):
                     self.selected_idx = i
                     self.current_code[i] = (self.current_code[i] - 1) % 10
+                    play_sound("puzzle_click")
                     return True
                 if self.dial_rects[i].collidepoint(mpos):
                     self.selected_idx = i
                     self.current_code[i] = (self.current_code[i] + 1) % 10
+                    play_sound("puzzle_click")
                     return True
 
         return False
@@ -168,8 +181,10 @@ class NumberLockPuzzle(BasePuzzle):
     def check_solution(self):
         if self.current_code == self.target_code:
             self.is_solved = True
+            play_sound("puzzle_solved")
             self.set_feedback("SUCCESS! The tumbler clicks open!", UI_SUCCESS_GREEN, 5.0)
         else:
+            play_sound("puzzle_failed")
             self.set_feedback("INCORRECT COMBINATION. The mechanism resists.", UI_HIGHLIGHT_RED, 2.5)
 
     def draw(self, surface: pygame.Surface):
@@ -254,26 +269,32 @@ class TileAlignPuzzle(BasePuzzle):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.is_closed = True
+                play_sound("inspect_close")
                 return True
             elif event.key == pygame.K_h:
                 self.show_hint = not self.show_hint
+                play_sound("ui_select")
                 return True
             elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                 self.check_solution()
                 return True
             elif event.key in (pygame.K_LEFT, pygame.K_a):
                 self.selected_idx = (self.selected_idx - 1) % self.num_tiles
+                play_sound("ui_select")
                 return True
             elif event.key in (pygame.K_RIGHT, pygame.K_d):
                 self.selected_idx = (self.selected_idx + 1) % self.num_tiles
+                play_sound("ui_select")
                 return True
             elif event.key in (pygame.K_UP, pygame.K_w, pygame.K_r):
                 # Rotate clockwise 90 degrees
                 self.current_angles[self.selected_idx] = (self.current_angles[self.selected_idx] + 90) % 360
+                play_sound("puzzle_click")
                 return True
             elif event.key in (pygame.K_DOWN, pygame.K_s):
                 # Rotate counter-clockwise 90 degrees
                 self.current_angles[self.selected_idx] = (self.current_angles[self.selected_idx] - 90) % 360
+                play_sound("puzzle_click")
                 return True
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -300,8 +321,10 @@ class TileAlignPuzzle(BasePuzzle):
     def check_solution(self):
         if self.current_angles == self.target_angles:
             self.is_solved = True
+            play_sound("puzzle_solved")
             self.set_feedback("MECHANISM ALIGNED! The vault unlocks!", UI_SUCCESS_GREEN, 5.0)
         else:
+            play_sound("puzzle_failed")
             self.set_feedback("MISALIGNED. Pins fail to connect.", UI_HIGHLIGHT_RED, 2.5)
 
     def draw(self, surface: pygame.Surface):
